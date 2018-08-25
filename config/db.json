@@ -1,0 +1,10 @@
+[
+	{
+		"db_user"   : "yunwotest",
+		"db_home"   : "rm-bp13ha15g578q41vr7o.mysql.rds.aliyuncs.com",
+		"db_port"   : 3306,
+        	"db_name"   : "card",
+        	"db_pass"   : "Yunwo$0730"
+	}
+]
+
