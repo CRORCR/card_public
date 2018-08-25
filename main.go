@@ -1,13 +1,12 @@
 package main
 
-import(
-	"fmt"
+import (
 	"./server/db"
 	"./server/mainserver"
+	"fmt"
 )
 
-
-func main(){
+func main() {
 	var rpcserver mainserver.RPCServer
 	if nil != db.InitDB() {
 		panic("数据库打开失败...")
@@ -15,4 +14,3 @@ func main(){
 	fmt.Println("数据库打开成功...")
 	rpcserver.Start()
 }
-
