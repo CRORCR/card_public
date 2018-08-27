@@ -42,7 +42,7 @@ type Users struct {
 }
 
 /*
- * 描述：获取用户信息
+ * 描述：根据用户分享ID获取用户信息
  *
  *******************************************************************************/
 func (this *Users) GetShareUser( usershareid *string, user *Users ) error {
@@ -52,6 +52,19 @@ func (this *Users) GetShareUser( usershareid *string, user *Users ) error {
 	}
 	return nil
 }
+
+/*
+ * 描述：根据手机号获取用户信息
+ *
+ *******************************************************************************/
+func (this *Users) GetPhoneUser( phone *string, user *Users ) error {
+	fage, err := db.GetDBHand(0).Table("users").Where( "phone = ?", phone ).Get( user )
+	if !fage || nil != err {
+		return errors.New( fmt.Sprintf("手机用户: %s 不存在，或数据库操作失败", phone ) )
+	}
+	return nil
+}
+
 
 /*
  * 描述：判断手机账号存不存在
