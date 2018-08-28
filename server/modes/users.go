@@ -147,21 +147,31 @@ func (this *Users) PhoneSave( user *Users, strNull *string )error {
 /*
  * 描述：查询用户是否已经存在
  *
- *******************************************************************************
-func (this *Users) GetUserByUnionidAndroid() bool {
-	bil, _ := db.GetDBHand(0).Table("users").Where("unionid_android = ? ", this.UnionidAndroid).Get(this)
-	return bil
+ *******************************************************************************/
+func (this *Users) GetUserByUnionidAndroid( union *string, user *Users )error{
+	bil, err := db.GetDBHand(0).Table("users").
+				    Where("unionid_android = ? ", union ).
+				    Get( user )
+	if !bil {
+		return errors.New("用户不存在")
+	}
+	return err
 }
 
- *
+/*
  * 描述：查询用户是否已经存在
  *
- *******************************************************************************
-func (this *Users) GetUserByUnionidIos() bool {
-	bil, _ := db.GetDBHand(0).Table("users").Where("unionid_android = ? ", this.UnionidAndroid).Get(this)
-	return bil
+ *******************************************************************************/
+func (this *Users) GetUserByUnionidIos( union *string, user *Users )error{
+	bil, err := db.GetDBHand(0).Table("users").
+					Where("unionid_ios = ? ", union).
+					Get( user )
+	if !bil {
+		return errors.New("用户不存在")
+	}
+	return err
 }
-*/
+
 
 
 

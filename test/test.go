@@ -21,7 +21,9 @@ func main() {
         fmt.Println("连接RPC服务失败：", err)
     }
     fmt.Println("连接RPC服务成功")
-    err = client.Call("Users.IsPhoneUser", "19803091863", &user)
+    user.Phone = "19803091863"
+    var strNill string
+    err = client.Call("Users.PhoneSave", &user, &strNill)
     if err != nil {
         fmt.Println("调用失败：", err)
     }
