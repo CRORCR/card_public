@@ -58,6 +58,7 @@ func (this *Users) GetShareUser( usershareid *string, user *Users ) error {
  *
  *******************************************************************************/
 func (this *Users) GetPhoneUser( phone *string, user *Users ) error {
+	fmt.Println("GetPhoneUser Phone:", phone)
 	fage, err := db.GetDBHand(0).Table("users").Where( "phone = ?", phone ).Get( user )
 	if !fage || nil != err {
 		return errors.New( fmt.Sprintf("手机用户: %s 不存在，或数据库操作失败", phone ) )
