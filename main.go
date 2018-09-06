@@ -22,6 +22,6 @@ func main() {
 	rdb := ndb.GetRndbHand()
 	//rdb.Do("shane", "aaaaaaaaaaaa")
 	rdb.Rndb.Put("astaxie", 1, 10*time.Second)
-	fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
+	fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	rpcserver.Start()
 }

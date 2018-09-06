@@ -17,9 +17,9 @@ type RedisConf struct {
 	Rndb cache.Cache
 }
 
-var Rndb RedisConf
+var Rndb *RedisConf
 
-func GetRndbHand()RedisConf{
+func GetRndbHand()*RedisConf{
 	return Rndb
 }
 
