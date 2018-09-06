@@ -1,0 +1,6 @@
+{
+  "redisHost": "r-2ze2efb1366d8574.redis.rds.aliyuncs.com",
+  "redisUser": "",
+  "redisPwd": "Open+123",
+  "redisPort": "6379"
+}

@@ -23,6 +23,10 @@ func GetRndbHand()*RedisConf{
 	return Rndb
 }
 
+func Init( strConfigFile string )error{
+	return Rndb.GetRedis( strConfigFile )
+}
+
 func (this *RedisConf)Init(configFile string) {
 	jsonFile, err := os.Open(configFile)
 	defer jsonFile.Close()
