@@ -17,5 +17,8 @@ func main() {
 	if nil != err {
 		panic("Redis Error" )
 	}
+	fmt.Println("Redis服务连接成功...")
+	rdb := ndb.GetRndbHand()
+	rdb.Do("shane", "aaaaaaaaaaaa")
 	rpcserver.Start()
 }
