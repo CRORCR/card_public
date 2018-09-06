@@ -15,7 +15,7 @@ func main() {
 	fmt.Println("数据库打开成功...")
 	err := ndb.Init("./config/redis.json")
 	if nil != err {
-		panic("Redis Error:",err )
+		panic("Redis Error" )
 	}
 	rpcserver.Start()
 }
