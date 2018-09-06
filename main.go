@@ -21,6 +21,6 @@ func main() {
 	fmt.Println("Redis服务连接成功...")
 	rdb := ndb.GetRndbHand()
 	//rdb.Do("shane", "aaaaaaaaaaaa")
-	rdb.Put("astaxie", 1, 10*time.Second)
+	rdb.Rndb.Put("astaxie", 1, 10*time.Second)
 	rpcserver.Start()
 }
