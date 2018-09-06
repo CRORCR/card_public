@@ -17,10 +17,10 @@ type RedisConf struct {
 	Rndb cache.Cache
 }
 
-var Rndb *RedisConf
+var Rndb RedisConf
 
-func GetRndbHand()*RedisConf{
-	return Rndb
+func GetRndbHand()cache.Cache{
+	return Rndb.Rndb
 }
 
 func Init( strConfigFile string )error{
