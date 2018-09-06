@@ -1,6 +1,7 @@
 package main
 
 import (
+	"time"
 	"./server/db"
 	"./server/ndb"
 	"./server/mainserver"
@@ -19,6 +20,7 @@ func main() {
 	}
 	fmt.Println("Redis服务连接成功...")
 	rdb := ndb.GetRndbHand()
-	rdb.Do("shane", "aaaaaaaaaaaa")
+	//rdb.Do("shane", "aaaaaaaaaaaa")
+	rdb.Put("astaxie", 1, 10*time.Second)
 	rpcserver.Start()
 }
