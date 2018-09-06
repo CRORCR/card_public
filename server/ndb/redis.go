@@ -19,7 +19,7 @@ type RedisConf struct {
 
 var Rndb RedisConf
 
-func GetRndbHand()*RedisConf{
+func GetRndbHand()RedisConf{
 	return Rndb
 }
 
