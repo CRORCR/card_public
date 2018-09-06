@@ -46,7 +46,7 @@ func (this *RedisConf)GetRedis(configPath string) error {
 				this.Host,
 				this.Port,
 				0,
-				this.Paw)
+				this.Pwd)
 	fmt.Println("Redis Info:", s )
 	this.Rndb = redis.NewRedisCache()
 	return this.Rndb.StartAndGC(s)
