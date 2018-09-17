@@ -45,7 +45,7 @@ type Users struct {
  * 描述：根据用户分享ID获取用户信息
  *
  *******************************************************************************/
-func (this *Users) GetShareUser( usershareid *string, user *Users ) error {
+func (this *Users) GetShareUser( usershareid string, user *Users ) error {
 	fmt.Println("用户分享ID", usershareid)
 	fage, err := db.GetDBHand(0).Table("users").Where( "share_id = ?", usershareid).Get( user )
 	if !fage || nil != err {
