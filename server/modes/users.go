@@ -46,10 +46,12 @@ type Users struct {
  *
  *******************************************************************************/
 func (this *Users) GetShareUser( usershareid *string, user *Users ) error {
+	fmt.Println("用户分享ID", usershareid)
 	fage, err := db.GetDBHand(0).Table("users").Where( "share_id = ?", usershareid).Get( user )
 	if !fage || nil != err {
 		return errors.New( fmt.Sprintf("用户分享ID: %s 不存在，或数据库操作失败", usershareid ) )
 	}
+	fmt.Println("PUBLIC", user )
 	return nil
 }
 
