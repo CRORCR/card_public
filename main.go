@@ -1,9 +1,9 @@
 package main
 
 import (
-	"time"
+	//"time"
 	"./server/db"
-	"./server/ndb"
+	//"./server/ndb"
 	"./server/mainserver"
 	"fmt"
 )
@@ -14,6 +14,7 @@ func main() {
 		panic("数据库打开失败...")
 	}
 	fmt.Println("数据库打开成功...")
+	/*
 	err := ndb.Init("./config/redis.json")
 	if nil != err {
 		panic("Redis Error" )
@@ -28,5 +29,6 @@ func main() {
 	rdb.Put("astaxie4", 10000, 10*time.Second*20)
 	rdb.Put("astaxie5", 10000, 10*time.Second*20)
 	fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	*/
 	rpcserver.Start()
 }

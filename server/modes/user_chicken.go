@@ -17,7 +17,7 @@ import (
  *  status      ：状态：0 正常 1 禁用 2 违法操作
  *
  ********************************************************************************/
-type Users struct {
+type UserChicken struct {
 	Id             uint32 `xorm:"not null 'id'"`
 	TypeId         uint32 `xorm:"not null 'type_id'"`
 	OpenId         string `xorm:"not null 'open_id'"`
@@ -45,7 +45,7 @@ type Users struct {
  * 描述：根据用户分享ID获取用户信息
  *
  *******************************************************************************/
-func (this *Users) GetShareUser( usershareid string, user *Users ) error {
+func (this *UserChicken) GetShareUser( usershareid string, user *UserChicken ) error {
 	fmt.Println("用户分享ID", usershareid)
 	fage, err := db.GetDBHand(0).Table("users").Where( "share_id = ?", usershareid).Get( user )
 	if !fage || nil != err {
@@ -59,7 +59,7 @@ func (this *Users) GetShareUser( usershareid string, user *Users ) error {
  * 描述：根据手机号获取用户信息
  *
  *******************************************************************************/
-func (this *Users) GetPhoneUser( phone *string, user *Users ) error {
+func (this *UserChicken) GetPhoneUser( phone *string, user *UserChicken ) error {
 	fmt.Println("GetPhoneUser Phone:", phone)
 	fage, err := db.GetDBHand(0).Table("users").Where( "phone = ?", phone ).Get( user )
 	if !fage || nil != err {
@@ -73,7 +73,7 @@ func (this *Users) GetPhoneUser( phone *string, user *Users ) error {
  * 描述：判断手机账号存不存在
  *
  *******************************************************************************/
-func (this *Users) IsPhoneUser( phone *string, user *Users )error {
+func (this *UserChicken) IsPhoneUser( phone *string, user *UserChicken )error {
 	fage, err := db.GetDBHand(0).Table("users").
 			       Where("phone = ?", phone ).
 			       Get( user )
@@ -89,7 +89,12 @@ func (this *Users) IsPhoneUser( phone *string, user *Users )error {
  *	前置条件:  UnionId.Phone 不可以为空
  *
  *******************************************************************************/
-func ( this *Users)UnionBing( unid *UnionId, user *Users ) error{
+ type UnionId struct{
+	Union	string
+	Type	string
+	Phone	string
+}
+func ( this *UserChicken)UnionBing( unid *UnionId, user *UserChicken ) error{
 	user.Phone = unid.Phone
 	if "unionid_android" == unid.Type {
 		user.UnionidAndroid = unid.Union
@@ -113,7 +118,7 @@ func ( this *Users)UnionBing( unid *UnionId, user *Users ) error{
  *	前置条件:  UnionId.Phone 不可以为空
  *
  *******************************************************************************/
-func ( this *Users)SetIcon( user *Users, nfage *bool ) error{
+func ( this *UserChicken)SetIcon( user *UserChicken, nfage *bool ) error{
 	count, err := db.GetDBHand(0).Table("users").
 				Where("share_id = ? ", user.SharId ).
 				Cols( "iconurl" ).
@@ -132,7 +137,7 @@ func ( this *Users)SetIcon( user *Users, nfage *bool ) error{
  *		   2: users 表中不存在此手机的唯一性。
  *
  *******************************************************************************/
-func (this *Users) PhoneSave( user *Users, strNull *string )error {
+func (this *UserChicken) PhoneSave( user *UserChicken, strNull *string )error {
 	user.CreateAt = time.Now().Unix()
 	user.SharId   = lib.StrMd5Str(fmt.Sprintf("%s%d", user.Phone, user.CreateAt))
 	if user.IconUrl == "" {
@@ -146,7 +151,7 @@ func (this *Users) PhoneSave( user *Users, strNull *string )error {
  * 描述：查询用户是否已经存在
  *
  *******************************************************************************/
-func (this *Users) GetUserByUnionidAndroid( union *string, user *Users )error{
+func (this *UserChicken) GetUserByUnionidAndroid( union *string, user *UserChicken )error{
 	bil, err := db.GetDBHand(0).Table("users").
 				    Where("unionid_android = ? ", union ).
 				    Get( user )
@@ -160,7 +165,7 @@ func (this *Users) GetUserByUnionidAndroid( union *string, user *Users )error{
  * 描述：查询用户是否已经存在
  *
  *******************************************************************************/
-func (this *Users) GetUserByUnionidIos( union *string, user *Users )error{
+func (this *UserChicken) GetUserByUnionidIos( union *string, user *UserChicken )error{
 	bil, err := db.GetDBHand(0).Table("users").
 					Where("unionid_ios = ? ", union).
 					Get( user )
