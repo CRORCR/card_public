@@ -17,11 +17,7 @@ type RPCServer struct {
 func (this *RPCServer) Start() {
 
 	user := new(modes.Users)
-	chicken := new(modes.UserChicken)
 	rpc.Register(user)
-	rpc.Register(chicken)
-
-
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", ":8081")
 

@@ -21,13 +21,13 @@
  ********************************************************************************************/
 CREATE TABLE IF NOT EXISTS Users(
     id          	INT UNSIGNED        AUTO_INCREMENT PRIMARY KEY  COMMENT '用 户 ID',
-    share_id 		CHAR(128)           NOT NULL                    COMMENT '用户分享ID',
+    share_id 		CHAR(32)           NOT NULL                     COMMENT '用户分享ID',
     iconurl		VARCHAR(256)	    NOT NULL DEFAULT ''		COMMENT '头像地址',
     type_id     	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '注册类型',
-    phone       	CHAR(12)            NOT NULL                    COMMENT '账    号',
+    phone       	CHAR(11)            NOT NULL                    COMMENT '账    号',
     open_id     	VARCHAR(516)        NOT NULL DEFAULT ''         COMMENT '微信OpenId',
     name        	CHAR(30)            NOT NULL                    COMMENT '姓    名',
-    token       	CHAR(30)            NOT NULL DEFAULT ''         COMMENT 'TOKEN   ',
+    token       	CHAR(64)            NOT NULL DEFAULT ''         COMMENT 'TOKEN   ',
     unionid_android  	CHAR(32)       	    NOT NULL DEFAULT ''         COMMENT ' andorid unionid ',
     unionid_ios  	CHAR(32)            NOT NULL DEFAULT ''         COMMENT ' ios unionid ',
     number_id   	CHAR(27)            NOT NULL DEFAULT ''         COMMENT '身份证号',
