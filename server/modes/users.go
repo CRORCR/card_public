@@ -170,6 +170,18 @@ func (this *Users) GetUserByUnionidIos( union *string, user *Users )error{
 	return err
 }
 
+/*
+ * 描述：用户手机号登陆
+ *
+ *******************************************************************************/
+func (this *Users) PhoneLogin( phone *string, user *Users )error{
+	if nil != this.IsPhoneUser( phone, user ) {
+		user.Phone = *phone
+		return this.PhoneSave( user, nil )
+
+	}
+	return nil
+}
 
 
 
