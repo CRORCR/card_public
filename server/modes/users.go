@@ -18,38 +18,42 @@ import (
  *
  ********************************************************************************/
 type Users struct {
-	Id             uint32 `xorm:"not null 'id'"`
-	TypeId         uint32 `xorm:"not null 'type_id'"`
-	OpenId         string `xorm:"not null 'open_id'"`
-	SharId         string `xorm:"not null 'share_id'"`
-	IconUrl        string `xorm:"not null 'iconurl'"`
-	Phone          string `xorm:"not null 'phone'"`
-	Name           string `xorm:"not null 'name'"`
-	NumberId       string `xorm:"not null 'number_id'"`
-	JwtToken       string `xorm:"not null 'jwt_token'"`
-	Token          string `xorm:"not null 'token'"`
-	LoginPass      string `xorm:"not null 'loginpass'"`
-	PayPass        string `xorm:"not null 'paypass'"`
-	CreateAt       int64  `xorm:"not null 'create_at'"`
-	UpdateAt       int64  `xorm:"not null 'update_at'"`
-	Email          string `xorm:"not null 'email'"`
-	Sex            uint8  `xorm:"not null 'sex'"`
-	Role           uint8  `xorm:"not null 'role'"`
-	Attesta        uint8  `xorm:"not null 'attesta'"`
-	Status         uint8  `xorm:"not null 'status'"`
-	UnionidAndroid string `xorm:"not null 'unionid_android'"`
-	UnionidIos     string `xorm:"not null 'unionid_ios'"`
+	Id             uint32  `xorm:"not null 'id'"`
+	TypeId         uint32  `xorm:"not null 'type_id'"`
+	OpenId         string  `xorm:"not null 'open_id'"`
+	SharId         string  `xorm:"not null 'share_id'"`
+	IconUrl        string  `xorm:"not null 'iconurl'"`
+	Phone          string  `xorm:"not null 'phone'"`
+	Name           string  `xorm:"not null 'name'"`
+	NumberId       string  `xorm:"not null 'number_id'"`
+	JwtToken       string  `xorm:"not null 'jwt_token'"`
+	Token          string  `xorm:"not null 'token'"`
+	LoginPass      string  `xorm:"not null 'loginpass'"`
+	PayPass        string  `xorm:"not null 'paypass'"`
+	CreateAt       int64   `xorm:"not null 'create_at'"`
+	UpdateAt       int64   `xorm:"not null 'update_at'"`
+	Email          string  `xorm:"not null 'email'"`
+	Sex            uint8   `xorm:"not null 'sex'"`
+	Role           uint8   `xorm:"not null 'role'"`
+	Attesta        uint8   `xorm:"not null 'attesta'"`
+	Status         uint8   `xorm:"not null 'status'"`
+	UnionidAndroid string  `xorm:"not null 'unionid_android'"`
+	UnionidIos     string  `xorm:"not null 'unionid_ios'"`
+	Cash	       float64 `xorm:"not null 'cash'"`
+	Trust	       float64 `xorm:"not null 'trust'"`
+	Bean           float64 `xorm:"not null 'bean'"`
+	Credits	       float64 `xorm:"not null 'credits'"`
 }
 
 /*
  * 描述：根据用户分享ID获取用户信息
  *
  *******************************************************************************/
-func (this *Users) GetShareUser( usershareid string, user *Users ) error {
-	fmt.Println("用户分享ID", usershareid)
-	fage, err := db.GetDBHand(0).Table("users").Where( "share_id = ?", usershareid).Get( user )
+func (this *Users) GetShareUser( Usershareid string, user *Users ) error {
+	fmt.Println("用户分享ID", Usershareid)
+	fage, err := db.GetDBHand(0).Table("Users").Where( "share_id = ?", Usershareid).Get( user )
 	if !fage || nil != err {
-		return errors.New( fmt.Sprintf("用户分享ID: %s 不存在，或数据库操作失败", usershareid ) )
+		return errors.New( fmt.Sprintf("用户分享ID: %s 不存在，或数据库操作失败", Usershareid ) )
 	}
 	fmt.Println("PUBLIC", user )
 	return nil
@@ -61,7 +65,7 @@ func (this *Users) GetShareUser( usershareid string, user *Users ) error {
  *******************************************************************************/
 func (this *Users) GetPhoneUser( phone string, user *Users ) error {
 	fmt.Println("GetPhoneUser Phone:", phone)
-	fage, err := db.GetDBHand(0).Table("users").Where( "phone = ?", phone ).Get( user )
+	fage, err := db.GetDBHand(0).Table("Users").Where( "phone = ?", phone ).Get( user )
 	if !fage || nil != err {
 		return errors.New( fmt.Sprintf("手机用户: %s 不存在，或数据库操作失败", phone ) )
 	}
@@ -74,7 +78,7 @@ func (this *Users) GetPhoneUser( phone string, user *Users ) error {
  *
  *******************************************************************************/
 func (this *Users) IsPhoneUser( phone *string, user *Users )error {
-	fage, err := db.GetDBHand(0).Table("users").
+	fage, err := db.GetDBHand(0).Table("Users").
 			       Where("phone = ?", phone ).
 			       Get( user )
 	if !fage || nil != err {
@@ -95,9 +99,11 @@ func ( this *Users)UnionBing( unid *UnionId, user *Users ) error{
 		user.UnionidAndroid = unid.Union
 	}else if "unionid_ios"  == unid.Type {
 		user.UnionidIos = unid.Union
+	}else if "unionid_token" == unid.Type {
+		user.Token = unid.Type
 	}
 	if nil == user.IsPhoneUser( &unid.Phone, user ){ // 如果存在手机号
-		_, err := db.GetDBHand(0).Table("users").
+		_, err := db.GetDBHand(0).Table("Users").
 				Where("phone = ? ", unid.Phone ).
 				Cols( unid.Type ).
 				Update(user)
@@ -114,7 +120,7 @@ func ( this *Users)UnionBing( unid *UnionId, user *Users ) error{
  *
  *******************************************************************************/
 func ( this *Users)SetIcon( user *Users, nfage *bool ) error{
-	count, err := db.GetDBHand(0).Table("users").
+	count, err := db.GetDBHand(0).Table("Users").
 				Where("share_id = ? ", user.SharId ).
 				Cols( "iconurl" ).
 				Update(user)
@@ -129,7 +135,7 @@ func ( this *Users)SetIcon( user *Users, nfage *bool ) error{
  * 描述： 功能创建一个新用户
  *
  *	前置条件:  1: this.Phone 不可以为空。
- *		   2: users 表中不存在此手机的唯一性。
+ *		   2: Users 表中不存在此手机的唯一性。
  *
  *******************************************************************************/
 func (this *Users) PhoneSave( user *Users, strNull *string )error {
@@ -138,7 +144,7 @@ func (this *Users) PhoneSave( user *Users, strNull *string )error {
 	if user.IconUrl == "" {
 		user.IconUrl  = lib.GetUserLib().HeadIcon
 	}
-	_, err := db.GetDBHand(0).Table("users").Insert( user )
+	_, err := db.GetDBHand(0).Table("Users").Insert( user )
 	return err
 }
 
@@ -147,7 +153,7 @@ func (this *Users) PhoneSave( user *Users, strNull *string )error {
  *
  *******************************************************************************/
 func (this *Users) GetUserByUnionidAndroid( union *string, user *Users )error{
-	bil, err := db.GetDBHand(0).Table("users").
+	bil, err := db.GetDBHand(0).Table("Users").
 				    Where("unionid_android = ? ", union ).
 				    Get( user )
 	if !bil {
@@ -161,7 +167,7 @@ func (this *Users) GetUserByUnionidAndroid( union *string, user *Users )error{
  *
  *******************************************************************************/
 func (this *Users) GetUserByUnionidIos( union *string, user *Users )error{
-	bil, err := db.GetDBHand(0).Table("users").
+	bil, err := db.GetDBHand(0).Table("Users").
 					Where("unionid_ios = ? ", union).
 					Get( user )
 	if !bil {
@@ -175,13 +181,14 @@ func (this *Users) GetUserByUnionidIos( union *string, user *Users )error{
  *
  *******************************************************************************/
 func (this *Users) PhoneLogin( phone *string, user *Users )error{
+	fmt.Println("Public PhoneLogin:", phone )
 	if nil != this.IsPhoneUser( phone, user ) {
 		user.Phone = *phone
-		return this.PhoneSave( user, nil )
+		err := this.PhoneSave( user, nil )
+		fmt.Println("user:", err)
+		return err
 
 	}
 	return nil
 }
-
-
 

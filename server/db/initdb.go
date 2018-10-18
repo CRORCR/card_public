@@ -42,7 +42,7 @@ func InitDB() error {
 	dbHand.SetMaxOpenConns(5)
 	g_dbHand = append(g_dbHand, dbHand)
     }
-    fmt.Println("Web database links are successful")
+    fmt.Println("DB:", dblist)
     return nil
 }
 

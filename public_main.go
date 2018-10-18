@@ -30,6 +30,5 @@ func main() {
 	rdb.Put("astaxie5", 10000, 10*time.Second*20)
 	fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	*/
-	fmt.Println("数据库打开成功...")
 	rpcserver.Start()
 }

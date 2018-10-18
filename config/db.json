@@ -1,10 +1,10 @@
 [
 	{
-		"db_user"   : "testserver",
-		"db_home"   : "rm-2ze0vj2espbt2nfj7to.mysql.rds.aliyuncs.com",
+		"db_user"   : "root",
+		"db_home"   : "127.0.0.1",
 		"db_port"   : 3306,
-        	"db_name"   : "dbserver1",
-        	"db_pass"   : "Yunwo$0730"
+        	"db_name"   : "test",
+        	"db_pass"   : "123456"
 	}
 ]
 

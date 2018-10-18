@@ -19,7 +19,7 @@ func (this *RPCServer) Start() {
 	user := new(modes.Users)
 	rpc.Register(user)
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp", ":8081")
+	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7001")
 
 	if err != nil {
 		fmt.Println("错误了哦")
