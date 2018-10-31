@@ -1,5 +1,5 @@
 USE test;
---DROP table Users;
+DROP table Users;
 
 
 /*
