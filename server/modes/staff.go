@@ -69,19 +69,22 @@ func( this *StaffInfo )addStaff(){
  *
  ********************************************************************************************/
 type Staff struct {
-	Id          int    `json:"id" xorm:"id"`		// id主键
-	Name        string `json:"name" xorm:"name"`		// 员工姓名
+	Id          int    `json:"id" xorm:"id"`			// id主键
+	Name        string `json:"name" xorm:"name"`			// 员工姓名
 	MerchantId  string `json:"merchant_id" xorm:"merchant_id"`	// 商 家 ID
-	Phone       string `json:"phone" xorm:"phone"`		// 员工手机号
+	Phone       string `json:"phone" xorm:"phone"`			// 员工手机号
 	UserId	    string `json:"user_id" xorm:"user_id"`		// 员 工 ID
-	NumberId    string `json:"number_id" xorm:"number_id"`	// 身份证号
-	Sex	    bool   `json:"sex" xorm:"sex"`		// 性    别
-	CreateAt    int64  `json:"-" xorm:"create_at"`	// 创建时间
-	State	    int64  `json:"state" xorm:"state"`		// 状    态
+	NumberId    string `json:"number_id" xorm:"number_id"`		// 身份证号
+	Sex	    bool   `json:"sex" xorm:"sex"`			// 性    别
+	CreateAt    int64  `json:"-" xorm:"create_at"`			// 创建时间
+	State	    int64  `json:"state" xorm:"state"`			// 状    态
 	NumberFage  int64  `json:"number_fage" xorm:"number_fage"`	// 身份标识 
-	Authority   int64  `json:"authority" xorm:"authority"`	// 权    限
-	CreateStr   string `json:"create_at" xorm:"-"`		// 更新时间供前端展示
+	Authority   int64  `json:"authority" xorm:"authority"`		// 权    限
+	CreateStr   string `json:"create_at" xorm:"-"`			// 更新时间供前端展示
 }
+
+type StaffList []Staff
+
 
 func( this *Staff )name()string{
 	var val StaffInfo
