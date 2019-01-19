@@ -1,6 +1,5 @@
-USE test;
-DROP table Users;
 
+DROP TABLE IF EXISTS Users;
 
 /*
  * 描述：用户管理员表
@@ -8,7 +7,6 @@ DROP table Users;
  *  type_id     : 用户创建类型 
  *			0 微信 
  *			1 手机号 
- *			2 报名吧 报名创建用户
  *
  *  sex		: 0 未知 1 女 2 男 
  *
@@ -23,7 +21,7 @@ DROP table Users;
 CREATE TABLE IF NOT EXISTS Users(
     id          	INT UNSIGNED        AUTO_INCREMENT PRIMARY KEY  COMMENT '用 户 ID',
     share_id 		CHAR(32)            NOT NULL                    COMMENT '用户分享ID',
-    iconurl		VARCHAR(1024)	    NOT NULL DEFAULT ''		COMMENT '头像地址',
+    iconurl		VARCHAR(512)	    NOT NULL DEFAULT ''		COMMENT '头像地址',
     type_id     	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '注册类型',
     phone       	CHAR(11)            NOT NULL                    COMMENT '账    号',
     open_id     	VARCHAR(516)        NOT NULL DEFAULT ''         COMMENT '微信OpenId',
@@ -32,21 +30,19 @@ CREATE TABLE IF NOT EXISTS Users(
     unionid_android  	CHAR(32)       	    NOT NULL DEFAULT ''         COMMENT 'and unionid ',
     unionid_ios  	CHAR(32)            NOT NULL DEFAULT ''         COMMENT 'ios unionid ',
     number_id   	CHAR(27)            NOT NULL DEFAULT ''         COMMENT '身份证号',
-    jwt_token   	VARCHAR(526)        NOT NULL DEFAULT ''         COMMENT 'JWTTOKEN',
-    loginpass   	CHAR(255)           NOT NULL DEFAULT ''         COMMENT '登陆密码',
-    paypass     	CHAR(255)           NOT NULL DEFAULT ''         COMMENT '支付密码',
+    loginpass   	CHAR(32)            NOT NULL DEFAULT ''         COMMENT '登陆密码',
+    paypass     	CHAR(32)            NOT NULL DEFAULT ''         COMMENT '支付密码',
     create_at   	INT UNSIGNED        NOT NULL                    COMMENT '创建时间',
     update_at   	INT UNSIGNED        NOT NULL DEFAULT 0          COMMENT '更新时间',
-    email       	CHAR(64)            NOT NULL DEFAULT ''         COMMENT '邮箱地址',
+    email       	VARCHAR(64)         NOT NULL DEFAULT ''         COMMENT '邮箱地址',
     role        	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '角    色',
     sex         	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '性    别',
     attesta     	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '身份认证',
     status      	TINYINT UNSIGNED    NOT NULL DEFAULT 0          COMMENT '状    态',
     cash                DOUBLE(9,2)         NOT NULL DEFAULT 0.0        COMMENT '现    金',
     trust               DOUBLE(9,2)         NOT NULL DEFAULT 0.0        COMMENT '鍩    分',
-    bean		DOUBLE(9,2)	    NOT NULL DEFAULT 0.0	COMMENT '鍩    豆',
-    credits		DOUBLE(9,2)	    NOT NULL DEFAULT 0.0	COMMENT '积    分',
-    INDEX users(share_id,jwt_token,token,phone)
+    code		CHAR(6)		    NOT NULL			COMMENT '邀 请 码',
+    INDEX users(share_id,jwt_token,token,phone,unionid_android)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=30000 COMMENT='用户信息表';
 
 

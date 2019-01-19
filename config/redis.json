@@ -1,6 +1,5 @@
 {
-  "redisHost": "r-2ze2efb1366d8574.redis.rds.aliyuncs.com",
-  "redisUser": "",
-  "redisPwd": "Open+123",
-  "redisPort": "6379"
+  "ip_port": "127.0.0.1:6379",
+  "password": "123456",
+  "db": 1
 }

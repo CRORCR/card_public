@@ -7,7 +7,7 @@ import (
 	//"errors"
 	"net/rpc"
 
-	"../modes"
+	"public/server/modes"
 )
 
 type RPCServer struct {
@@ -16,11 +16,13 @@ type RPCServer struct {
 
 func (this *RPCServer) Start() {
 
-	user := new(modes.Users)
-	rpc.Register(user)
+	merchant := new(modes.Merchant)
+	rpc.Register( merchant )
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7001")
+	staff := new(modes.Staff)
+	rpc.Register(staff)
 
+	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7003")
 	if err != nil {
 		fmt.Println("错误了哦")
 		os.Exit(1)
@@ -32,6 +34,6 @@ func (this *RPCServer) Start() {
 		if err != nil {
 			continue
 		}
-		rpc.ServeConn(conn)
+		go rpc.ServeConn(conn)
 	}
 }
