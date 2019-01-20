@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"public/server/db"
+
 	"github.com/go-redis/redis"
 
 	//	"strings"
@@ -70,18 +71,19 @@ func (this *MerchantInfo) Get() error {
 	return sErr
 }
 
+//*****************以下是提供外部rpc调用**************************************
 /*
  * 描述: 商家信息表
  *
  *  type_id     : 商家所属行业ID
- *  status      : 1 认证中 2 认证未通过 3 认证通过， 4 删除
+ *  status      : 1 认证中 2 认证未通过 3 认证通过  4 删除
  */
 type Merchant struct {
-	Id           string  `json:"id" xorm:"id"`                       //商家表ID,
+	Id           int     `json:"id" xorm:"id"`                       //商家表ID,
 	FID          string  `json:"fid" xorm:"fid"`                     //父商家id
 	MerchantId   string  `json:"merchant_id" xorm:"merchant_id"`     //本商家Id
 	UserId       string  `json:"user_id" xorm:"user_id"`             //用户分享ID,
-	MerchantType string  `json:"merchant_type" xorm:"merchant_type"` //商家 行业 类型
+	MerchantType int64   `json:"merchant_type" xorm:"merchant_type"` //商家 行业 类型
 	MerchantRate float64 `json:"merchant_rate" xorm:"-"`             //商家 行业 利率
 	TrustStatus  bool    `json:"trust_status" xorm:"trust_status"`   //是否诺商家, 0 否 1 是
 	AreaNumber   int64   `json:"area_number" xorm:"area_number"`     //地 区 I   D,
@@ -111,9 +113,11 @@ type MerchantList []Merchant
 func (this MerchantList) Len() int {
 	return len(this)
 }
+
 func (this MerchantList) Swap(i, j int) {
 	this[i], this[j] = this[j], this[i]
 }
+
 func (this MerchantList) Less(i, j int) bool {
 	return this[i].Distance < this[j].Distance
 }
@@ -139,7 +143,7 @@ func (this *Merchant) Get(inPara, outPara *Merchant) error {
 /*
  * desc: 添加商家
  * 
- *************************************************************************************/
+ ***************/
 func (this *Merchant) Add(inPara, outPara *Merchant) error {
 	var val MerchantInfo
 	val.MerchantId = inPara.MerchantId // 商家ID
@@ -154,10 +158,10 @@ func (this *Merchant) Add(inPara, outPara *Merchant) error {
 /*
  * desc: 更新商家状态
  * 
- *************************************************************************************/
+ **************************************************************************************/
 func (this *Merchant) UpdateStatus(inPara, outPara *Merchant) error {
 	if inPara.MerchantId != "" {
-		_, err := db.GetDBHand(0).Table(inPara.name()).Cols("checkdesc").Cols("status").Update(inPara)
+		_, err := db.GetDBHand(0).Table(inPara.name()).Where("merchant_id=?", inPara.MerchantId).Cols("checkdesc").Cols("status").Update(inPara)
 		outPara = inPara
 		return err
 	}
@@ -170,7 +174,7 @@ func (this *Merchant) UpdateStatus(inPara, outPara *Merchant) error {
  *************************************************************************************/
 func (this *Merchant) UpdateTrust(inPara, outPara *Merchant) error {
 	if inPara.MerchantId != "" {
-		_, err := db.GetDBHand(0).Table(inPara.name()).Cols("trust").Update(inPara)
+		_, err := db.GetDBHand(0).Table(inPara.name()).Where("merchant_id=?", inPara.MerchantId).Cols("trust").Update(inPara)
 		return err
 	}
 	return errors.New("成员属性 MerchantId 不可以为空")
@@ -197,8 +201,8 @@ func (this *Merchant) GetStaff(inPara *Merchant, outPara *StaffList) error {
 type CoordinatesPoint struct {
 	Longitude float64 //经       度
 	Latitude  float64 //纬       度
-	Page int
-	OfferSet int
+	Page      int
+	OfferSet  int
 }
 
 var redClient *redis.Client
@@ -212,23 +216,23 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 	if err != nil {
 		return err
 	}
-	fmt.Println("分页:",inPara.Page,inPara.OfferSet)
+	fmt.Println("分页:", inPara.Page, inPara.OfferSet)
 
-	radius=radius[(inPara.Page-1)*inPara.OfferSet:(inPara.Page-1)*inPara.OfferSet+inPara.OfferSet]  //分页处理
+	radius = radius[(inPara.Page-1)*inPara.OfferSet:(inPara.Page-1)*inPara.OfferSet+inPara.OfferSet] //分页处理
 	//表名对应所有的shareid取出
 	for i := 0; i < len(radius); i++ {
 		//数组第一个元素是表名   后面是share_id
-		addRadiueSelice(radius[i][0],radius[i][1])
+		addRadiueSelice(radius[i][0], radius[i][1])
 	}
 
 	//查询mysql 表名对应的所有shareid 集合存储在result中
-	m:=make(MerchantList,0)
-	res:=make(MerchantList,0)
+	m := make(MerchantList, 0)
+	res := make(MerchantList, 0)
 	for key, value := range result {
-		name:=fmt.Sprintf("car_merchant_%v",key)
+		name := fmt.Sprintf("car_merchant_%v", key)
 		e := db.GetDBHand(0).Table(name).In("merchant_id", value).Find(&m)
-		fmt.Printf("err:%+v  result:%+v \n",e,m)
-		res=append(res,m...)
+		fmt.Printf("err:%+v  result:%+v \n", e, m)
+		res = append(res, m...)
 		//*outPara=append(*outPara,m...)
 	}
 
@@ -238,9 +242,9 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 	for i := 0; i < len(radius); i++ {
 		//数组第一个元素是表名   后面是share_id
 		for _, value := range res {
-			if strings.EqualFold(radius[i][1],value.MerchantId){
-				value.Distance,_=strconv.ParseFloat(radius[i][2],64)
-				*outPara=append(*outPara,value)
+			if strings.EqualFold(radius[i][1], value.MerchantId) {
+				value.Distance, _ = strconv.ParseFloat(radius[i][2], 64)
+				*outPara = append(*outPara, value)
 				break
 			}
 		}
@@ -252,11 +256,11 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 var result = make(map[string][]string, 0)
 
 /*根据表名获得对应的数组*/
-func addRadiueSelice(tableName,share string) {
-	if len(result[tableName])==0{
-		result[tableName]=make([]string,0)
+func addRadiueSelice(tableName, share string) {
+	if len(result[tableName]) == 0 {
+		result[tableName] = make([]string, 0)
 	}
-	result[tableName]=append(result[tableName],share)
+	result[tableName] = append(result[tableName], share)
 	return
 }
 
