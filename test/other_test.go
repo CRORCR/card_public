@@ -1,20 +1,20 @@
 package test
 
 import (
-    "fmt"
-    "net/rpc"
-	"testing"
+	"fmt"
+	"net/rpc"
 	"public/server/modes"
+	"testing"
 )
 
-type RPCServer struct{
-    IP      string `json:"rpc_ip"`
-    Type    string `json:"rpc_type"`
-    Rpc    *rpc.Client
+type RPCServer struct {
+	IP   string `json:"rpc_ip"`
+	Type string `json:"rpc_type"`
+	Rpc  *rpc.Client
 }
 
 func TestOther(t *testing.T) {
-    //var unid = modes.UnionId{"shane1234567890", "unionid_android", "19803066666"}
+	//var unid = modes.UnionId{"shane1234567890", "unionid_android", "19803066666"}
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败：", err)
@@ -63,20 +63,19 @@ func TestOther(t *testing.T) {
 	*/
 
 	var merc modes.Merchant
-        var sil  modes.StaffList
-        merc.MerchantId = "123456789"
-        err = client.Call("Merchant.GetStaff", &merc, &sil )
-        if err != nil {
-                fmt.Println("调用失败：", err)
-        }
-        fmt.Printf("调用结果：%+v\n", sil )
-
+	var sil modes.StaffList
+	merc.MerchantId = "123456789"
+	err = client.Call("Merchant.GetStaff", &merc, &sil)
+	if err != nil {
+		fmt.Println("调用失败：", err)
+	}
+	fmt.Printf("调用结果：%+v\n", sil)
 
 	var staff modes.Staff
-	staff.UserId  = "user_id"
-	err = client.Call("Staff.Get", &staff, &staff )
-        if err != nil {
-                fmt.Println("调用失败：", err)
-        }
-        fmt.Printf("调用结果：%+v\n", staff )
+	staff.UserId = "user_id"
+	err = client.Call("Staff.Get", &staff, &staff)
+	if err != nil {
+		fmt.Println("调用失败：", err)
+	}
+	fmt.Printf("调用结果：%+v\n", staff)
 }
