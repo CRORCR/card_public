@@ -22,7 +22,8 @@ type CoordinatesPoint struct {
 
 func TestMer(t *testing.T) {
 	//addMer() //添加商家信息
-	getMer()  //获得商家信息
+	//getMer()  //获得商家信息
+	findBranch()
 	//getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
@@ -66,6 +67,26 @@ func getMer() {
 	}
 	mer2:=modes2.Merchant{}
 	err = client.Call("Merchant.Get", &mer, &mer2)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", mer2)
+}
+
+func findBranch() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+
+	mer := modes2.Merchant{
+		MerchantId: "33",
+		FID:"22",
+	}
+	mer2:=modes2.MerchantList{}
+	err = client.Call("Merchant.FindBranch", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}

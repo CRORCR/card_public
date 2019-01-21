@@ -16,6 +16,8 @@ import (
 func TestStaff(t *testing.T) {
 	//addStaff()
 	//getStaff()
+	//updateStaff()
+	delStaff()
 	//getMerId()
 }
 
@@ -38,6 +40,23 @@ func addStaff() {
 	fmt.Printf("调用结果:%+v\n", s)
 }
 
+//删除员工
+func delStaff() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	add := modes.Staff{UserId: "22yuangogn"}
+	var s modes.Staff
+	err = client.Call("Staff.Delete", &add, &s)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", s)
+}
+
 func getStaff(){
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
@@ -46,16 +65,32 @@ func getStaff(){
 	}
 	fmt.Println("连接RPC服务成功")
 	sta := modes.Staff{UserId: "22yuangogn"}
-	err = client.Call("Staff.Get", &sta, &sta)
+	out:=modes.AddStaff{}
+	err = client.Call("Staff.Get", &sta, &out)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
-	fmt.Printf("调用结果:%+v\n", sta) //22
+	fmt.Printf("调用结果:%+v\n", out) //22
 }
-/*
-{Id:2 Name:yaungong MerchantId:22 Phone:17600381284 UserId:22yuangogn NumberId: Sex:false
-CreateAt:1547950866 State:0 NumberFage:0 Authority:1 CreateStr:}
-*/
+
+//更新员工信息
+func updateStaff() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	add := modes.AddStaff{modes.Staff{
+		MerchantId: "22", UserId: "22yuangogn", Name: "yg", Phone: "17600381284",
+		Sex:        false}, 310,}
+	var s modes.Staff
+	err = client.Call("Staff.Update", &add, &s)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", s)
+}
 
 func getMerId() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
