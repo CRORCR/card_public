@@ -17,7 +17,7 @@ func TestStaff(t *testing.T) {
 	//addStaff()
 	//getStaff()
 	//updateStaff()
-	delStaff()
+	//delStaff()
 	//getMerId()
 }
 
@@ -31,7 +31,7 @@ func addStaff() {
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
 		MerchantId: "22", UserId: "22yuangogn", Name: "yaungong", Phone: "17600381284",
-		Sex:        false, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
+		Sex:        1, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Add", &add, &s)
 	if err != nil {
@@ -57,7 +57,8 @@ func delStaff() {
 	fmt.Printf("调用结果:%+v\n", s)
 }
 
-func getStaff(){
+//查询员工
+func getStaff() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
 	if err != nil {
@@ -65,7 +66,7 @@ func getStaff(){
 	}
 	fmt.Println("连接RPC服务成功")
 	sta := modes.Staff{UserId: "22yuangogn"}
-	out:=modes.AddStaff{}
+	out := modes.AddStaff{}
 	err = client.Call("Staff.Get", &sta, &out)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -83,7 +84,7 @@ func updateStaff() {
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
 		MerchantId: "22", UserId: "22yuangogn", Name: "yg", Phone: "17600381284",
-		Sex:        false}, 310,}
+		Sex:        1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Update", &add, &s)
 	if err != nil {

@@ -23,7 +23,7 @@ type CoordinatesPoint struct {
 func TestMer(t *testing.T) {
 	//addMer() //添加商家信息
 	//getMer()  //获得商家信息
-	findBranch()
+	//findBranch()
 	//getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
@@ -40,7 +40,7 @@ func addMer() {
 	fmt.Println("连接RPC服务成功")
 	mer := modes2.Merchant{
 		Phone:      "19803091863",
-		MerchantId: "33",
+		MerchantId: "22",
 		UserId:     "SHANE",
 		AreaNumber: 310,
 		Longitude:  116.404,

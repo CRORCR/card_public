@@ -3,12 +3,8 @@ package modes
 import (
 	"public/server/db"
 	"time"
-
-	//	"errors"
 	"fmt"
 	"strconv"
-	//	"strings"
-	//	"time"
 )
 
 const STAFF_HASH = "STAFF_HASH_"
@@ -86,7 +82,7 @@ type Staff struct {
 	Phone      string `json:"phone" xorm:"phone"`             // 员工手机号
 	UserId     string `json:"user_id" xorm:"user_id"`         // 员 工 ID
 	NumberId   string `json:"number_id" xorm:"number_id"`     // 身份证号
-	Sex        bool   `json:"sex" xorm:"sex"`                 // 性    别
+	Sex        int   `json:"sex" xorm:"sex"`                 // 性    别    1    2
 	CreateAt   int64  `json:"-" xorm:"create_at"`             // 创建时间
 	State      int64  `json:"state" xorm:"state"`             // 状    态
 	NumberFage int64  `json:"number_fage" xorm:"number_fage"` // 身份标识
@@ -155,6 +151,7 @@ type AddStaff struct {
  *
  *************************************************************************/
 func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
+	fmt.Println("添加")
 	var val StaffInfo
 	val.MerchantId = inPara.PStaff.MerchantId
 	val.UserId = inPara.PStaff.UserId
@@ -172,7 +169,8 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
  */
 func (this *Staff) Update(inPara *AddStaff, outPara *Staff) error {
 	name, _ := inPara.PStaff.name()
-	_, err := db.GetDBHand(0).Table(name).Where("phone=? ",inPara.PStaff.Phone).Update(&inPara.PStaff)
+	fmt.Printf("想看sex :%+v\n",inPara)
+	_, err := db.GetDBHand(0).Table(name).Where("user_id=? ",inPara.PStaff.UserId).Update(&inPara.PStaff)
 	return err
 }
 
