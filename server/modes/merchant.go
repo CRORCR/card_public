@@ -87,24 +87,24 @@ type Merchant struct {
 	MerchantRate float64 `json:"merchant_rate" xorm:"-"`             //商家 行业 利率
 	TrustStatus  bool    `json:"trust_status" xorm:"trust_status"`   //是否诺商家, 0 否 1 是
 	AreaNumber   int64   `json:"area_number" xorm:"area_number"`     //地 区 I   D,
-	CreateAt     int64   `josn:"-" xorm:"create_at"`                 //创 建 时 间,
-	CreateAtStr  string  `josn:"create_at" xorm:"-"`                 //创 建 时 间,
-	Describea    string  `josn:"describea" xorm:"describea"`         //描       述,
-	Address      string  `josn:"address" xorm:"address"`             //地       址,
-	UserName     string  `josn:"name" xorm:"name"`                   //名       称,
-	Status       int64   `josn:"status" xorm:"status"`               //状       态, 未认证过的 0  已经审核通过 1
-	Phone        string  `josn:"phone" xorm:"phone"`                 //手  机   号,
-	Icon         string  `josn:"icon" xorm:"icon"`                   //商 家 头 像,
-	LoopImg      string  `josn:"loopimg" xorm:"loopimg"`             //商家轮播图,
-	InfoImg      string  `josn:"infoimg" xorm:"infoimg"`             //商家详情图,
-	Video        string  `josn:"video" xorm:"video"`                 //商家视频介绍,
-	CheckDesc    string  `josn:"checkdesc" xorm:"checkdesc"`         //认证未失败描述
-	CheckImg     string  `josn:"checkimg" xorm:"checkimg"`           //认       证
-	Longitude    float64 `josn:"longitude" xorm:"longitude"`         //经       度
-	Latitude     float64 `josn:"latitude" xorm:"latitude"`           //纬       度
-	Cash         float64 `josn:"cash" xorm:"cash"`                   //现       金
-	Trust        float64 `josn:"trust" xorm:"trust"`                 //鍩       分
-	Credits      float64 `josn:"credits" xorm:"credits"`             //积       分
+	CreateAt     int64   `json:"-" xorm:"create_at"`                 //创 建 时 间,
+	CreateAtStr  string  `json:"create_at" xorm:"-"`                 //创 建 时 间,
+	Describea    string  `json:"describea" xorm:"describea"`         //描       述,
+	Address      string  `json:"address" xorm:"address"`             //地       址,
+	UserName     string  `json:"name" xorm:"name"`                   //名       称,
+	Status       int64   `json:"status" xorm:"status"`               //状       态, 未认证过的 0  已经审核通过 1
+	Phone        string  `json:"phone" xorm:"phone"`                 //手  机   号,
+	Icon         string  `json:"icon" xorm:"icon"`                   //商 家 头 像,
+	LoopImg      string  `json:"loopimg" xorm:"loopimg"`             //商家轮播图,
+	InfoImg      string  `json:"infoimg" xorm:"infoimg"`             //商家详情图,
+	Video        string  `json:"video" xorm:"video"`                 //商家视频介绍,
+	CheckDesc    string  `json:"checkdesc" xorm:"checkdesc"`         //认证未失败描述
+	CheckImg     string  `json:"checkimg" xorm:"checkimg"`           //认       证
+	Longitude    float64 `json:"longitude" xorm:"longitude"`         //经       度
+	Latitude     float64 `json:"latitude" xorm:"latitude"`           //纬       度
+	Cash         float64 `json:"cash" xorm:"cash"`                   //现       金
+	Trust        float64 `json:"trust" xorm:"trust"`                 //鍩       分
+	Credits      float64 `json:"credits" xorm:"credits"`             //积       分
 	Distance     float64 `json:"distance" xorm:"-"`                  //商家与用户的距离
 }
 
@@ -135,8 +135,8 @@ func (this *Merchant) name() string {
  * 
  *************************************************************************************/
 func (this *Merchant) Get(inPara, outPara *Merchant) error {
-	outPara = inPara
-	_, err := db.GetDBHand(0).Table(inPara.name()).Get(outPara)
+	_, err := db.GetDBHand(0).Table(inPara.name()).Get(inPara)
+	*outPara = *inPara
 	return err
 }
 

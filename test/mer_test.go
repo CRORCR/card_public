@@ -22,10 +22,10 @@ type CoordinatesPoint struct {
 
 func TestMer(t *testing.T) {
 	//addMer() //添加商家信息
-	//getMer()  //获得商家信息
+	getMer()  //获得商家信息
 	//getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
-	UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
+	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
 	//getMargin()    //获得20公里以内的所有商家
 }
 
@@ -64,11 +64,12 @@ func getMer() {
 	mer := modes2.Merchant{
 		MerchantId: "33",
 	}
-	err = client.Call("Merchant.Get", &mer, &mer)
+	mer2:=modes2.Merchant{}
+	err = client.Call("Merchant.Get", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
-	fmt.Printf("调用结果:%+v\n", mer)
+	fmt.Printf("调用结果:%+v\n", mer2)
 }
 
 //获得商家所有员工   给定商家id

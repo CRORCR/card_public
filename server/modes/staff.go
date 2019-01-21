@@ -129,7 +129,6 @@ func (this *Staff) Get(inPara, outPara *Staff) error {
 func (this *Staff) GetMerchantId(inPara *Staff, pMerchantId *string) error {
 	val, err := inPara.getInfo()
 	*pMerchantId = val.MerchantId
-	fmt.Printf("merid:%v\n",val.MerchantId)
 	return err
 }
 
