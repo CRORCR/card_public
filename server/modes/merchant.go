@@ -155,6 +155,12 @@ func (this *Merchant) Add(inPara, outPara *Merchant) error {
 	return err
 }
 
+func (this *Merchant)FindBranch(inPara *Merchant, outPara *MerchantList)error{
+	err := db.GetDBHand(0).Table(inPara.name()).Where("merchant_id=? ",inPara.FID).Find(outPara)
+	fmt.Println("err:",err)
+	return err
+}
+
 /*
  * desc: 更新商家状态
  * 

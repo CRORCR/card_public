@@ -2,6 +2,8 @@ package modes
 
 import (
 	"public/server/db"
+	"time"
+
 	//	"errors"
 	"fmt"
 	"strconv"
@@ -49,6 +51,13 @@ func (this *StaffInfo) addStaff() {
 	client.HSet(strName, "AreaNumber", this.AreaNumber)
 }
 
+func (this *StaffInfo) delStaff() {
+	client := db.GetRedis()
+	strName := this.name()
+	b, e := client.Expire(strName, 1*time.Second).Result()
+	fmt.Println("删除redis",b,e)
+}
+
 /*
  * 描述：商家员工表字段说明
  *
@@ -87,13 +96,12 @@ type Staff struct {
 
 type StaffList []Staff
 
-func (this *Staff) name() string {
+func (this *Staff) name() (string,int64) {
 	var val StaffInfo
 	val.UserId = this.UserId
 	val.getAll()
 	fmt.Printf("area_number:%v\n",val.AreaNumber)
-
-	return fmt.Sprintf("chi_staff_%d", val.AreaNumber)
+	return fmt.Sprintf("chi_staff_%d", val.AreaNumber),val.AreaNumber
 }
 
 func (this *Staff) getInfo() (StaffInfo, error) {
@@ -117,8 +125,11 @@ func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
  * 描述: 获取员工信息表
  *
  *************************************************************************/
-func (this *Staff) Get(inPara, outPara *Staff) error {
-	_, err := db.GetDBHand(0).Table(inPara.name()).Get(outPara)
+func (this *Staff) Get(inPara *Staff, outPara *AddStaff) error {
+	name, area := inPara.name()
+	_, err := db.GetDBHand(0).Table(name).Get(inPara)
+	outPara.PStaff=*inPara
+	outPara.AreaNumber=area
 	return err
 }
 
@@ -133,8 +144,8 @@ func (this *Staff) GetMerchantId(inPara *Staff, pMerchantId *string) error {
 }
 
 type AddStaff struct {
-	PStaff     Staff // 员工信息
-	AreaNumber int64 // 区号ID
+	PStaff     Staff `json:"p_staff"`// 员工信息
+	AreaNumber int64 `json:"area_number"`// 区号ID
 }
 
 /*
@@ -149,6 +160,39 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
 	val.UserId = inPara.PStaff.UserId
 	val.AreaNumber = inPara.AreaNumber
 	val.addStaff()
-	_, err := db.GetDBHand(0).Table(inPara.PStaff.name()).Insert(&inPara.PStaff)
+	name, _ := inPara.PStaff.name()
+	_, err := db.GetDBHand(0).Table(name).Insert(&inPara.PStaff)
+	return err
+}
+
+/**
+ * @desc   : 更新员工
+ * @author : Ipencil
+ * @date   : 2019/1/21
+ */
+func (this *Staff) Update(inPara *AddStaff, outPara *Staff) error {
+	name, _ := inPara.PStaff.name()
+	_, err := db.GetDBHand(0).Table(name).Where("phone=? ",inPara.PStaff.Phone).Update(&inPara.PStaff)
+	return err
+}
+
+/**
+ * @desc   : 删除员工
+ * @author : Ipencil
+ * @date   : 2019/1/21
+ */
+func (this *Staff) Delete(inPara *Staff, outPara *Staff) error {
+	var val StaffInfo
+	val.UserId = inPara.UserId
+	val.delStaff()
+	name, _ := inPara.name()
+	_, err := db.GetDBHand(0).Table(name).Get(inPara)
+	if err!=nil{
+		return err
+	}
+	_, err = db.GetDBHand(0).Table(name).Where("id=?",inPara.Id).Delete(inPara)
+	if err!=nil{
+		return err
+	}
 	return err
 }
