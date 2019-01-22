@@ -21,7 +21,7 @@ type CoordinatesPoint struct {
 }
 
 func TestMer(t *testing.T) {
-	//addMer() //添加商家信息
+	addMer() //添加商家信息
 	//getMer()  //获得商家信息
 	//findBranch()
 	//getMerStaff() //查询商家所有员工
@@ -40,7 +40,8 @@ func addMer() {
 	fmt.Println("连接RPC服务成功")
 	mer := modes2.Merchant{
 		Phone:      "19803091863",
-		MerchantId: "22",
+		MerchantId: "11",
+		UserName:   "奇葩一号店",
 		UserId:     "SHANE",
 		AreaNumber: 310,
 		Longitude:  116.404,
@@ -65,7 +66,7 @@ func getMer() {
 	mer := modes2.Merchant{
 		MerchantId: "33",
 	}
-	mer2:=modes2.Merchant{}
+	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.Get", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -83,9 +84,9 @@ func findBranch() {
 
 	mer := modes2.Merchant{
 		MerchantId: "33",
-		FID:"22",
+		FID:        "22",
 	}
-	mer2:=modes2.MerchantList{}
+	mer2 := modes2.MerchantList{}
 	err = client.Call("Merchant.FindBranch", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -111,7 +112,6 @@ func getMerStaff() {
 	}
 	fmt.Printf("调用结果:%+v\n", mer)
 }
-
 
 //获得商家所有没有权限员工   给定商家id
 func getMerStaffNotAuth() {

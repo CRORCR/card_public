@@ -14,13 +14,13 @@ import (
  * @create 2019/1/20
  */
 func TestStaff(t *testing.T) {
-	//addStaff()
+	addStaff()
 	//getStaff()
 	//updateStaff()
 	//delStaff()
 	//getMerId()
 	//addAuthority()
-	getAuthorityOfStaff()
+	//getAuthorityOfStaff()
 }
 
 //添加员工
@@ -32,7 +32,7 @@ func addStaff() {
 	}
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
-		MerchantId: "22", UserId: "22yuangogn", Name: "yaungong", Phone: "17600381284",
+		MerchantId: "11", UserId: "1101", Name: "yaungong", Phone: "17600381284",
 		Sex:        1, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Add", &add, &s)
@@ -129,7 +129,7 @@ func addAuthority() {
 	fmt.Printf("调用结果:%+v\n", s)
 }
 
-//所有有收款权限的员工
+//生成收款码
 func getAuthorityOfStaff() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
@@ -137,12 +137,11 @@ func getAuthorityOfStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.Staff{UserId: "000",Authority:1}   //增加收银权限
-	//add := modes.Staff{UserId: "000",Authority:0} //减去收银权限
-	var s []modes.Paye
-	err = client.Call("Staff.FindAuthOfStaff", &add, &s)
+	add := modes.Staff{UserId: "000",Authority:1}
+	var s string
+	err = client.Call("Staff.GetQRCode", &add, &s)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
-	fmt.Printf("调用结果:%+v\n", s)
+	fmt.Printf("调用结果:%+v\n", s) //{"mid":"22","uid":"000"}
 }

@@ -191,13 +191,6 @@ func (this *Staff) Delete(inPara *Staff, outPara *Staff) error {
 	return err
 }
 
-type Paye struct {
-	Name       string `json:"name"`         //收款人姓名
-	TypeOfShop string `json:"type_of_shop"` //店铺类型
-	NameOfShop string `json:"name_of_shop"` //店铺名称
-	ShopSize   string `json:"shop_size"`    //二维码
-}
-
 /**
  * @desc   : 生成此用户的收款码
  * @author : Ipencil
@@ -217,24 +210,5 @@ func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
 func (this *Staff) UpdAuthority(inPara *Staff, outPara *Staff) error {
 	name, _ := inPara.name()
 	_, err := db.GetDBHand(0).Table(name).Where("user_id=?", inPara.UserId).Cols("authority").Update(inPara)
-	return err
-}
-
-/**
- * @desc   : 获得本店铺所有有收款码的员工
- * @author : Ipencil
- * @date   : 2019/1/22
- */
-func (this *Staff) FindAuthOfStaff(inPara *Staff, outPara *[]Paye) error {
-	name, _ := inPara.name()
-	out := make([]*Staff, 0)
-	err := db.GetDBHand(0).Table(name).Where("authority=1").Find(&out)
-	for _, value := range out {
-		pay := Paye{}
-		pay.Name = value.Name
-		pay.ShopSize = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", value.MerchantId, value.UserId)
-		pay.NameOfShop = value.MerchantId
-		*outPara = append(*outPara, pay)
-	}
 	return err
 }
