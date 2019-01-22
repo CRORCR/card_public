@@ -205,6 +205,46 @@ func (this *Merchant) GetStaff(inPara *Merchant, outPara *StaffList) error {
 	return errors.New("成员属性 MerchantId 不可以为空")
 }
 
+
+/**
+ * @desc   : 获取所有无权限员工
+ * @author : Ipencil
+ * @date   : 2019/1/22
+ */
+func (this *Merchant) GetStaffNotAuth(inPara *Merchant, outPara *StaffList) error {
+	if inPara.MerchantId != "" {
+		var err error
+		var val MerchantInfo
+		val.MerchantId = inPara.MerchantId
+		if err = val.Get(); err == nil {
+			strStaffTableName := fmt.Sprintf("chi_staff_%d", val.AreaNumber)
+			db.GetDBHand(0).Table(strStaffTableName).Where("merchant_id = ? and authority=0", val.MerchantId).Find(outPara)
+		}
+		return err
+	}
+	return errors.New("成员属性 MerchantId 不可以为空")
+}
+
+/**
+ * @desc   : 获取所有有权限员工
+ * @author : Ipencil
+ * @date   : 2019/1/22
+ */
+func (this *Merchant) GetStaffHaveAuth(inPara *Merchant, outPara *StaffList) error {
+	if inPara.MerchantId != "" {
+		var err error
+		var val MerchantInfo
+		val.MerchantId = inPara.MerchantId
+		if err = val.Get(); err == nil {
+			strStaffTableName := fmt.Sprintf("chi_staff_%d", val.AreaNumber)
+			db.GetDBHand(0).Table(strStaffTableName).Where("merchant_id = ? and authority=1", val.MerchantId).Find(outPara)
+		}
+		return err
+	}
+	return errors.New("成员属性 MerchantId 不可以为空")
+}
+
+
 type CoordinatesPoint struct {
 	Longitude float64 //经       度
 	Latitude  float64 //纬       度

@@ -19,6 +19,8 @@ func TestStaff(t *testing.T) {
 	//updateStaff()
 	//delStaff()
 	//getMerId()
+	//addAuthority()
+	getAuthorityOfStaff()
 }
 
 //添加员工
@@ -107,4 +109,40 @@ func getMerId() {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Printf("调用结果:%+v\n", s) //22
+}
+
+//增加权限
+func addAuthority() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	add := modes.Staff{UserId: "000",Authority:1}   //增加收银权限
+	//add := modes.Staff{UserId: "000",Authority:0} //减去收银权限
+	var s modes.Staff
+	err = client.Call("Staff.UpdAuthority", &add, &s)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", s)
+}
+
+//所有有收款权限的员工
+func getAuthorityOfStaff() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	add := modes.Staff{UserId: "000",Authority:1}   //增加收银权限
+	//add := modes.Staff{UserId: "000",Authority:0} //减去收银权限
+	var s []modes.Paye
+	err = client.Call("Staff.FindAuthOfStaff", &add, &s)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", s)
 }

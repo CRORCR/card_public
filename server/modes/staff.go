@@ -1,10 +1,11 @@
 package modes
 
 import (
-	"public/server/db"
-	"time"
+	"errors"
 	"fmt"
+	"public/server/db"
 	"strconv"
+	"time"
 )
 
 const STAFF_HASH = "STAFF_HASH_"
@@ -31,7 +32,7 @@ func (this *StaffInfo) getAll() error {
 		this.MerchantId, _ = sKey["MerchantId"]
 		this.AreaNumber, _ = strconv.ParseInt(sKey["AreaNumber"], 10, 64)
 	}
-	fmt.Printf("sKey:%+v\n",sKey)
+	fmt.Printf("sKey:%+v\n", sKey)
 	return sErr
 }
 
@@ -51,7 +52,7 @@ func (this *StaffInfo) delStaff() {
 	client := db.GetRedis()
 	strName := this.name()
 	b, e := client.Expire(strName, 1*time.Second).Result()
-	fmt.Println("删除redis",b,e)
+	fmt.Println("删除redis", b, e)
 }
 
 /*
@@ -82,22 +83,22 @@ type Staff struct {
 	Phone      string `json:"phone" xorm:"phone"`             // 员工手机号
 	UserId     string `json:"user_id" xorm:"user_id"`         // 员 工 ID
 	NumberId   string `json:"number_id" xorm:"number_id"`     // 身份证号
-	Sex        int   `json:"sex" xorm:"sex"`                 // 性    别    1    2
+	Sex        int    `json:"sex" xorm:"sex"`                 // 性    别    女:1    男:2
 	CreateAt   int64  `json:"-" xorm:"create_at"`             // 创建时间
 	State      int64  `json:"state" xorm:"state"`             // 状    态
 	NumberFage int64  `json:"number_fage" xorm:"number_fage"` // 身份标识
-	Authority  int64  `json:"authority" xorm:"authority"`     // 权    限
+	Authority  int64  `json:"authority" xorm:"authority"`     // 权    限    无:0    收银:1
 	CreateStr  string `json:"create_at" xorm:"-"`             // 更新时间供前端展示
 }
 
 type StaffList []Staff
 
-func (this *Staff) name() (string,int64) {
+func (this *Staff) name() (string, int64) {
 	var val StaffInfo
 	val.UserId = this.UserId
 	val.getAll()
-	fmt.Printf("area_number:%v\n",val.AreaNumber)
-	return fmt.Sprintf("chi_staff_%d", val.AreaNumber),val.AreaNumber
+	fmt.Printf("area_number:%v\n", val.AreaNumber)
+	return fmt.Sprintf("chi_staff_%d", val.AreaNumber), val.AreaNumber
 }
 
 func (this *Staff) getInfo() (StaffInfo, error) {
@@ -108,24 +109,14 @@ func (this *Staff) getInfo() (StaffInfo, error) {
 }
 
 /*
- * 描述: 生成此用户的收款码
- *
- *************************************************************************/
-func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
-	val, err := inPara.getInfo()
-	*strQRCode = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", val.MerchantId, val.UserId)
-	return err
-}
-
-/*
  * 描述: 获取员工信息表
  *
  *************************************************************************/
 func (this *Staff) Get(inPara *Staff, outPara *AddStaff) error {
 	name, area := inPara.name()
 	_, err := db.GetDBHand(0).Table(name).Get(inPara)
-	outPara.PStaff=*inPara
-	outPara.AreaNumber=area
+	outPara.PStaff = *inPara
+	outPara.AreaNumber = area
 	return err
 }
 
@@ -140,8 +131,8 @@ func (this *Staff) GetMerchantId(inPara *Staff, pMerchantId *string) error {
 }
 
 type AddStaff struct {
-	PStaff     Staff `json:"p_staff"`// 员工信息
-	AreaNumber int64 `json:"area_number"`// 区号ID
+	PStaff     Staff `json:"p_staff"`     // 员工信息
+	AreaNumber int64 `json:"area_number"` // 区号ID
 }
 
 /*
@@ -158,6 +149,11 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
 	val.AreaNumber = inPara.AreaNumber
 	val.addStaff()
 	name, _ := inPara.PStaff.name()
+
+	b,_:=db.GetDBHand(0).Table(name).Where("name=",inPara.PStaff.Name).Get(outPara)
+	if b{
+		return errors.New("管理员不得重复")
+	}
 	_, err := db.GetDBHand(0).Table(name).Insert(&inPara.PStaff)
 	return err
 }
@@ -169,8 +165,8 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
  */
 func (this *Staff) Update(inPara *AddStaff, outPara *Staff) error {
 	name, _ := inPara.PStaff.name()
-	fmt.Printf("想看sex :%+v\n",inPara)
-	_, err := db.GetDBHand(0).Table(name).Where("user_id=? ",inPara.PStaff.UserId).Update(&inPara.PStaff)
+	fmt.Printf("想看sex :%+v\n", inPara)
+	_, err := db.GetDBHand(0).Table(name).Where("user_id=? ", inPara.PStaff.UserId).Update(&inPara.PStaff)
 	return err
 }
 
@@ -185,12 +181,60 @@ func (this *Staff) Delete(inPara *Staff, outPara *Staff) error {
 	val.delStaff()
 	name, _ := inPara.name()
 	_, err := db.GetDBHand(0).Table(name).Get(inPara)
-	if err!=nil{
+	if err != nil {
 		return err
 	}
-	_, err = db.GetDBHand(0).Table(name).Where("id=?",inPara.Id).Delete(inPara)
-	if err!=nil{
+	_, err = db.GetDBHand(0).Table(name).Where("id=?", inPara.Id).Delete(inPara)
+	if err != nil {
 		return err
+	}
+	return err
+}
+
+type Paye struct {
+	Name       string `json:"name"`         //收款人姓名
+	TypeOfShop string `json:"type_of_shop"` //店铺类型
+	NameOfShop string `json:"name_of_shop"` //店铺名称
+	ShopSize   string `json:"shop_size"`    //二维码
+}
+
+/**
+ * @desc   : 生成此用户的收款码
+ * @author : Ipencil
+ * @date   : 2019/1/22
+ */
+func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
+	val, err := inPara.getInfo()
+	*strQRCode = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", val.MerchantId, val.UserId)
+	return err
+}
+
+/**
+ * @desc   : 更新收款权限
+ * @author : Ipencil
+ * @date   : 2019/1/22
+ */
+func (this *Staff) UpdAuthority(inPara *Staff, outPara *Staff) error {
+	name, _ := inPara.name()
+	_, err := db.GetDBHand(0).Table(name).Where("user_id=?", inPara.UserId).Cols("authority").Update(inPara)
+	return err
+}
+
+/**
+ * @desc   : 获得本店铺所有有收款码的员工
+ * @author : Ipencil
+ * @date   : 2019/1/22
+ */
+func (this *Staff) FindAuthOfStaff(inPara *Staff, outPara *[]Paye) error {
+	name, _ := inPara.name()
+	out := make([]*Staff, 0)
+	err := db.GetDBHand(0).Table(name).Where("authority=1").Find(&out)
+	for _, value := range out {
+		pay := Paye{}
+		pay.Name = value.Name
+		pay.ShopSize = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", value.MerchantId, value.UserId)
+		pay.NameOfShop = value.MerchantId
+		*outPara = append(*outPara, pay)
 	}
 	return err
 }

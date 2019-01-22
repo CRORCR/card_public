@@ -112,6 +112,26 @@ func getMerStaff() {
 	fmt.Printf("调用结果:%+v\n", mer)
 }
 
+
+//获得商家所有没有权限员工   给定商家id
+func getMerStaffNotAuth() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+
+	var merc modes2.Merchant
+	var mer modes2.StaffList
+	merc.MerchantId = "33"
+	err = client.Call("Merchant.GetStaffNotAuth", &merc, &mer)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", mer)
+}
+
 //更新锘豆  给定商家id和锘豆数量(上层处理)
 func UpdateTrust() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
