@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	//"errors"
 	"net/rpc"
-
 	"public/server/modes"
 )
 
@@ -17,7 +15,7 @@ type RPCServer struct {
 func (this *RPCServer) Start() {
 
 	merchant := new(modes.Merchant)
-	rpc.Register( merchant )
+	rpc.Register(merchant)
 
 	staff := new(modes.Staff)
 	rpc.Register(staff)

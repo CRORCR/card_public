@@ -1,19 +1,21 @@
 package modes
 
 import (
+	"public/server/db"
+	"public/lib"
 	"errors"
 	"fmt"
-	"public/server/db"
 	"strconv"
-	"time"
 )
 
 const STAFF_HASH = "STAFF_HASH_"
 
 type StaffInfo struct {
 	UserId     string // 员工ID
+	Name       string // 员工姓名
 	MerchantId string // 商家ID
 	AreaNumber int64  // 商家所在地的区号
+	Identity   int64  // 身份类型 1: 店主 2: 员工
 }
 
 func (this *StaffInfo) name() string {
@@ -30,9 +32,10 @@ func (this *StaffInfo) getAll() error {
 	if nil == sErr {
 		this.UserId, _ = sKey["UserId"]
 		this.MerchantId, _ = sKey["MerchantId"]
+		this.Name = sKey["Name"]
 		this.AreaNumber, _ = strconv.ParseInt(sKey["AreaNumber"], 10, 64)
+		this.Identity, _ = strconv.ParseInt(sKey["Identity"], 10, 64)
 	}
-	fmt.Printf("sKey:%+v\n", sKey)
 	return sErr
 }
 
@@ -40,19 +43,19 @@ func (this *StaffInfo) getAll() error {
  * 描述: 添加员工
  *
  *************************************************************************/
-func (this *StaffInfo) addStaff() {
-	client := db.GetRedis()
-	strName := this.name()
-	client.HSet(strName, "UserId", this.UserId)
-	client.HSet(strName, "MerchantId", this.MerchantId)
-	client.HSet(strName, "AreaNumber", this.AreaNumber)
+func (this *StaffInfo) addStaff() error {
+	mapStaff := lib.ToMap(*this)
+	_, err := db.GetRedis().HMSet(this.name(), mapStaff).Result()
+	return err
 }
 
-func (this *StaffInfo) delStaff() {
-	client := db.GetRedis()
-	strName := this.name()
-	b, e := client.Expire(strName, 1*time.Second).Result()
-	fmt.Println("删除redis", b, e)
+/*
+ * 描述: 获取员工身份标志
+ *
+ *************************************************************************/
+func (this *StaffInfo) getIdentity() int64 {
+	nIdentity, _ := db.GetRedis().HGet(this.name(), "Identity").Int64()
+	return nIdentity
 }
 
 /*
@@ -61,7 +64,7 @@ func (this *StaffInfo) delStaff() {
  *	商家员工信息已所在的市区号为标记,例如: 邯郸:310, 邢台:319, 石家庄:311
  *
  * =======================================================================================
- * authority: 
+ * authority:
  *      0:1 收银权限
  *      如果员工存在收银权限: 收款码的生成规则
  *              {
@@ -97,7 +100,6 @@ func (this *Staff) name() (string, int64) {
 	var val StaffInfo
 	val.UserId = this.UserId
 	val.getAll()
-	fmt.Printf("area_number:%v\n", val.AreaNumber)
 	return fmt.Sprintf("chi_staff_%d", val.AreaNumber), val.AreaNumber
 }
 
@@ -106,6 +108,31 @@ func (this *Staff) getInfo() (StaffInfo, error) {
 	val.UserId = this.UserId
 	err := val.getAll()
 	return val, err
+}
+
+/*
+ * 描述: 生成此用户的收款码
+ *
+ *************************************************************************/
+func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
+	val, err := inPara.getInfo()
+	*strQRCode = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", val.MerchantId, val.UserId)
+	return err
+}
+
+
+/*
+ * 描述: 询问是不是店主
+ *
+ *************************************************************************/
+func (this *Staff) AskIdentity(inPara *Staff, nFage *bool) error {
+	var val StaffInfo
+	val.UserId = inPara.UserId
+	*nFage = false
+	if 1 == val.getIdentity() {
+		*nFage = true
+	}
+	return nil
 }
 
 /*
@@ -142,7 +169,6 @@ type AddStaff struct {
  *
  *************************************************************************/
 func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
-	fmt.Println("添加")
 	var val StaffInfo
 	val.MerchantId = inPara.PStaff.MerchantId
 	val.UserId = inPara.PStaff.UserId
@@ -150,8 +176,8 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
 	val.addStaff()
 	name, _ := inPara.PStaff.name()
 
-	b,_:=db.GetDBHand(0).Table(name).Where("name=",inPara.PStaff.Name).Get(outPara)
-	if b{
+	b, _ := db.GetDBHand(0).Table(name).Where("name=", inPara.PStaff.Name).Get(outPara)
+	if b {
 		return errors.New("管理员不得重复")
 	}
 	_, err := db.GetDBHand(0).Table(name).Insert(&inPara.PStaff)
@@ -165,50 +191,29 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
  */
 func (this *Staff) Update(inPara *AddStaff, outPara *Staff) error {
 	name, _ := inPara.PStaff.name()
-	fmt.Printf("想看sex :%+v\n", inPara)
 	_, err := db.GetDBHand(0).Table(name).Where("user_id=? ", inPara.PStaff.UserId).Update(&inPara.PStaff)
 	return err
 }
 
-/**
- * @desc   : 删除员工
- * @author : Ipencil
- * @date   : 2019/1/21
- */
-func (this *Staff) Delete(inPara *Staff, outPara *Staff) error {
-	var val StaffInfo
-	val.UserId = inPara.UserId
-	val.delStaff()
+/*
+ * desc: 删除管理员信息  支持根据商家ID或者员工ID组合删除
+ *
+ **************************************************************************/
+func (this *Staff) Del(inPara, outPara *Staff) error {
 	name, _ := inPara.name()
-	_, err := db.GetDBHand(0).Table(name).Get(inPara)
-	if err != nil {
-		return err
-	}
-	_, err = db.GetDBHand(0).Table(name).Where("id=?", inPara.Id).Delete(inPara)
-	if err != nil {
-		return err
-	}
-	return err
-}
-
-/**
- * @desc   : 生成此用户的收款码
- * @author : Ipencil
- * @date   : 2019/1/22
- */
-func (this *Staff) GetQRCode(inPara *Staff, strQRCode *string) error {
-	val, err := inPara.getInfo()
-	*strQRCode = fmt.Sprintf("{\"mid\":\"%s\",\"uid\":\"%s\"}", val.MerchantId, val.UserId)
+	_, err := db.GetDBHand(0).Table(name).
+		Where("user_id = ?", inPara.UserId).
+		Delete(inPara)
 	return err
 }
 
 /**
  * @desc   : 更新收款权限
  * @author : Ipencil
- * @date   : 2019/1/22
+ * @date   : 2019/1/23
  */
 func (this *Staff) UpdAuthority(inPara *Staff, outPara *Staff) error {
 	name, _ := inPara.name()
-	_, err := db.GetDBHand(0).Table(name).Where("user_id=?", inPara.UserId).Cols("authority").Update(inPara)
+	_, err := db.GetDBHand(0).Table(name).Where("merchant_id = ?", inPara.MerchantId).Cols("authority").Update(inPara)
 	return err
 }
