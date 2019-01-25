@@ -1,11 +1,10 @@
 package main
 
 import (
-	//"time"
 	"public/server/db"
-	//"./server/ndb"
 	"public/server/mainserver"
 	"fmt"
+	"public/server/modes"
 )
 
 func main() {
