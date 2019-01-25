@@ -1,18 +1,18 @@
 package lib
 
 import (
-	"os"
+	"bytes"
+	"encoding/json"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"io/ioutil"
-	"encoding/json"
-	"bytes"
+	"os"
 )
 
 type AliOSS struct {
-	Endpoint        string `json:"endpoint"`
-	AccessKeyId     string `json:"keyid"`
-	AccessKeySecret string `json:"keysecret"`
-	Bucket          string `json:"bucket"`
+	Endpoint        string      `json:"endpoint"`
+	AccessKeyId     string      `json:"keyid"`
+	AccessKeySecret string      `json:"keysecret"`
+	Bucket          string      `json:"bucket"`
 	ClientHead      *oss.Client // Oss链接具柄
 }
 
@@ -95,9 +95,9 @@ func (this *AliOSS) IsBucket(strBucketName string) bool {
 
 /*
 func main() {
-    client, err := 
-      oss.New("https://oss-cn-beijing.aliyuncs.com", 
-      "LTAIYWJj64hA5JS6", 
+    client, err :=
+      oss.New("https://oss-cn-beijing.aliyuncs.com",
+      "LTAIYWJj64hA5JS6",
       "CRk22hWvwfCrXvSR1VnI5AlmlqyKr6")
 
     var oss AliOSS

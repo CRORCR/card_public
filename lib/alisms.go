@@ -1,21 +1,21 @@
 package lib
 
 import (
-	"fmt"
-	"os"
-	"log"
-	"io/ioutil"
-	"encoding/json"
-	"time"
-	"net/url"
-	"sort"
-	"crypto/sha1"
-	"strings"
 	"crypto/hmac"
+	"crypto/sha1"
 	"encoding/base64"
-	"net/http"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/satori/go.uuid"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"sort"
+	"strings"
+	"time"
 )
 
 type smsCode struct {
@@ -31,31 +31,31 @@ type SmsSystemParam struct {
 	Format           string `json:"Format"`           //没传默认为JSON，可选填值：XML
 	SignatureMethod  string `json:"SignatureMethod"`  //建议固定值：HMAC-SHA1
 	SignatureVersion string `json:"SignatureVersion"` //建议固定值：1.0
-	SignatureNonce   string                           //用于请求的防重放攻击，每次请求唯一，JAVA语言建议用：java.util.UUID.randomUUID()生成即可
-	Timestamp        string                           //格式为：yyyy-MM-dd’T’HH:mm:ss’Z’；时区为：GMT
-	Signature        string                           //最终生成的签名结果值
+	SignatureNonce   string //用于请求的防重放攻击，每次请求唯一，JAVA语言建议用：java.util.UUID.randomUUID()生成即可
+	Timestamp        string //格式为：yyyy-MM-dd’T’HH:mm:ss’Z’；时区为：GMT
+	Signature        string //最终生成的签名结果值
 }
 
 type SmsApplicationParam struct {
 	Action        string `json:"Action"`   //API的命名，固定值，如发送短信API的值为：SendSms
 	Version       string `json:"Version"`  //API的版本，固定值，如短信API的值为：2017-05-25
 	RegionId      string `json:"RegionId"` //API支持的RegionID，如短信API的值为：cn-hangzhou
-	PhoneNumbers  string                   //短信接收号码,支持以逗号分隔的形式进行批量调用，批量上限为1000个手机号码,批量调用相对于单条调用及时性稍有延迟,验证码类型的短信推荐使用单条调用的方式；发送国际/港澳台消息时，接收号码格式为00+国际区号+号码，如“0085200000000”
-	SignName      string                   //短信签名
-	TemplateCode  string                   //短信模板ID，发送国际/港澳台消息时，请使用国际/港澳台短信模版
-	TemplateParam string                   //短信模板变量替换JSON串,友情提示:如果JSON中需要带换行符,请参照标准的JSON协议。 {“code”:”1234”,”product”:”ytx”}
-	OutId         string                   //外部流水扩展字段
+	PhoneNumbers  string //短信接收号码,支持以逗号分隔的形式进行批量调用，批量上限为1000个手机号码,批量调用相对于单条调用及时性稍有延迟,验证码类型的短信推荐使用单条调用的方式；发送国际/港澳台消息时，接收号码格式为00+国际区号+号码，如“0085200000000”
+	SignName      string //短信签名
+	TemplateCode  string //短信模板ID，发送国际/港澳台消息时，请使用国际/港澳台短信模版
+	TemplateParam string //短信模板变量替换JSON串,友情提示:如果JSON中需要带换行符,请参照标准的JSON协议。 {“code”:”1234”,”product”:”ytx”}
+	OutId         string //外部流水扩展字段
 }
 
 func (this *SmsSystemParam) ReadFile(strName string) {
 	jsonFile, err := os.Open(strName)
 	defer jsonFile.Close()
-	if (err != nil) {
-		panic("文件打开错误" + strName);
+	if err != nil {
+		panic("文件打开错误" + strName)
 		log.Fatal(err)
 	}
 	jsonData, err := ioutil.ReadAll(jsonFile)
-	if (err != nil) {
+	if err != nil {
 		panic("文件读取错误" + strName)
 		log.Fatal(err)
 	}
@@ -73,12 +73,12 @@ func (this *SmsSystemParam) InitParameter(configPath string) {
 func (this *SmsApplicationParam) readConfig(configPath string) {
 	jsonFile, err := os.Open(configPath)
 	defer jsonFile.Close()
-	if (err != nil) {
-		panic("文件打开错误" + configPath);
+	if err != nil {
+		panic("文件打开错误" + configPath)
 		log.Fatal(err)
 	}
 	jsonData, err := ioutil.ReadAll(jsonFile)
-	if (err != nil) {
+	if err != nil {
 		panic("文件读取错误" + configPath)
 		log.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func Sing(sys *SmsSystemParam, app *SmsApplicationParam) (string, string) {
 	return sinStr2, sortQueryString
 }
 
-func sing(urlstr string, secret string) (string) {
+func sing(urlstr string, secret string) string {
 	mac := hmac.New(sha1.New, []byte(fmt.Sprintf("%s&", secret)))
 	mac.Write([]byte(urlstr))
 	singn := base64.StdEncoding.EncodeToString(mac.Sum(nil))
@@ -128,7 +128,7 @@ func urlencode(str string) string {
 	return rep.Replace(url.QueryEscape(str))
 }
 
-func SendMsg(phoneNumber string, smsTmpName string, smsCodeParam string) (error) {
+func SendMsg(phoneNumber string, smsTmpName string, smsCodeParam string) error {
 	var smsSys SmsSystemParam
 	var smsApp SmsApplicationParam
 	var configPath string = "config/sms.json"
@@ -161,7 +161,7 @@ func SendMsg(phoneNumber string, smsTmpName string, smsCodeParam string) (error)
 	var res smsCode
 	json.Unmarshal(bodys, &res)
 	//fmt.Println(res.Code)
-	if (res.Code != "OK") {
+	if res.Code != "OK" {
 		return errors.New(res.Code)
 	}
 	return nil
