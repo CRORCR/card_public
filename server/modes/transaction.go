@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+
 type TransactionFoot struct {
 	Id           int64   `json:"id" xorm:"id"`                       // 表    ID
 	TranTd       string  `json:"tran_id" xorm:"tran_id"`             // 交 易 ID

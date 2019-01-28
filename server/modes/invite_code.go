@@ -30,3 +30,4 @@ func GetInvitecode() string {
 	}
 	return ""
 }
+

@@ -21,6 +21,7 @@ func TestStaff(t *testing.T) {
 	//getMerId()
 	//addAuthority()
 	//getAuthorityOfStaff()
+	getAreaNumber()
 }
 
 //添加员工
@@ -41,6 +42,7 @@ func addStaff() {
 	}
 	fmt.Printf("调用结果:%+v\n", s)
 }
+
 
 //删除员工
 func delStaff() {
@@ -67,8 +69,8 @@ func getStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	sta := modes.Staff{UserId: "22yuangogn"}
-	out := modes.AddStaff{}
+	sta := modes.Staff{UserId: "aa1212c4503999b2ce53e8dcc8eab98c"}
+	out := modes.Staff{}
 	err = client.Call("Staff.Get", &sta, &out)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -144,4 +146,21 @@ func getAuthorityOfStaff() {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Printf("调用结果:%+v\n", s) //{"mid":"22","uid":"000"}
+}
+
+//测试员工属于哪个区
+func getAreaNumber(){
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	var input="1ee395a8ee243cc1c440e4e52bff3382"
+	var output int64
+	err = client.Call("Staff.GetAreaNumber", &input, &output)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", output)
 }

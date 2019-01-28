@@ -22,6 +22,7 @@ type MerchantInfo struct {
 	AreaNumber  int64   // 商家所在区的ID
 	BucklePoint float64 // 本商当前费率
 	Count       int64   // 商家交易次数
+
 	//int64	// 时间标志
 
 	TarNumber int64 // 商家交易编号标志量( 从0递增,步长 1 )
@@ -257,9 +258,10 @@ func (this *Merchant) Add(inPara, outPara *Merchant) error {
 		staff.CreateAt = inPara.CreateAt     // 创建时间
 		staff.State = 0                      // 状    态
 		staff.NumberFage = 1                 // 身份标识
-		staff.Authority = 255                // 权    限
+		staff.Authority = 9223372036854775807  // 权    限
 		add.PStaff = staff
 		add.AreaNumber = inPara.AreaNumber
+		fmt.Println("商家入驻管理员信息:", staff )
 		err = staff.Add(&add, &staff)
 	}
 	return err

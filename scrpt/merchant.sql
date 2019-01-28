@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS car_merchant_310(
 	credits		DOUBLE(11,2)		NOT NULL DEFAULT 0.0	COMMENT '积       分',
 	rate		DOUBLE(11,2)            NOT NULL DEFAULT 0.0    COMMENT '费       率',
 	INDEX car_merchant_310( user_id,area_number,merchant_id,merchant_type)
-)ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=1 COMMENT='邯郸商家信息表';
+)ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='邯郸商家信息表';
 
 DROP TABLE IF EXISTS car_merchant_319;
 /*

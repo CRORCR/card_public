@@ -1,10 +1,12 @@
 package main
 
 import (
+	//"time"
 	"public/server/db"
+	"public/server/modes"
+	//"./server/ndb"
 	"public/server/mainserver"
 	"fmt"
-	"public/server/modes"
 )
 
 func main() {
@@ -26,4 +28,3 @@ func main() {
 	fmt.Println("启动RPC服务")
 	rpcserver.Start()
 }
-

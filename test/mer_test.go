@@ -28,6 +28,7 @@ func TestMer(t *testing.T) {
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
 	//getMargin()    //获得20公里以内的所有商家
+	//addBranch()
 }
 
 //添加商家信息
@@ -39,10 +40,10 @@ func addMer() {
 	}
 	fmt.Println("连接RPC服务成功")
 	mer := modes2.Merchant{
-		Phone:      "19803091863",
+		Phone:      "15517158532",
 		MerchantId: "11",
 		UserName:   "奇葩一号店",
-		UserId:     "SHANE",
+		UserId:     "1ee395a8ee243cc1c440e4e52bff3382",
 		AreaNumber: 310,
 		Longitude:  116.404,
 		Latitude:   39.915,
@@ -53,6 +54,7 @@ func addMer() {
 	}
 	fmt.Printf("调用结果:%+v\n", mer)
 }
+
 
 /* 根据商家id 获取商家   必填参数 商家id 必须使用rpc添加的用户才能知道区号*/
 func getMer() {
@@ -74,7 +76,8 @@ func getMer() {
 	fmt.Printf("调用结果:%+v\n", mer2)
 }
 
-func findBranch() {
+//绑定
+func addBranch() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
 	if err != nil {
@@ -82,12 +85,9 @@ func findBranch() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer := modes2.Merchant{
-		MerchantId: "33",
-		FID:        "22",
-	}
-	mer2 := modes2.MerchantList{}
-	err = client.Call("Merchant.FindBranch", &mer, &mer2)
+	mer:=modes2.MerchantAddBranch{Superior:"11",Lower:"22"}
+	mer2 := modes2.Merchant{}
+	err = client.Call("Merchant.AddBranch", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
