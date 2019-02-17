@@ -1,4 +1,3 @@
-
 /*
  * 描述：邯郸--商家交易表
  *
@@ -7,9 +6,9 @@
  *  status      ：0 支付, 1 退款
  *
  ********************************************************************************************/
-DROP TABLE IF EXISTS car_transaction_foot_310;
+DROP TABLE IF EXISTS car_transaction_310;
 CREATE TABLE IF NOT EXISTS car_transaction_310(
-	id		INT UNSIGNED		NOT NULL		COMMENT '表    ID',
+	id		INT UNSIGNED		NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '表    ID',
 	tran_id		CHAR(60)		NOT NULL		COMMENT '交 易 ID',
 	user_id		CHAR(32)   	    	NOT NULL 		COMMENT '用 户 ID',
 	user_phone	CHAR(11)   	    	NOT NULL 		COMMENT '用户手机号',
@@ -25,7 +24,7 @@ CREATE TABLE IF NOT EXISTS car_transaction_310(
 	status		INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT '当前状态',
 	create_at	INT UNSIGNED		NOT NULL		COMMENT	'创建时间',
 	update_at	INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT	'更新时间',
-	INDEX car_transaction_310( user_id, merchant_id, tran_id )
+	INDEX car_transaction_310( user_id, merchant_id )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='邯郸商家交易表';
 
 /*
@@ -36,9 +35,9 @@ CREATE TABLE IF NOT EXISTS car_transaction_310(
  *  status      ：0 支付, 1 退款
  *
  ********************************************************************************************/
-DROP TABLE IF EXISTS car_transaction_foot_311;
+DROP TABLE IF EXISTS car_transaction_311;
 CREATE TABLE IF NOT EXISTS car_transaction_311(
-	id		INT UNSIGNED		NOT NULL		COMMENT '表    ID',
+	id		INT UNSIGNED		NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '表    ID',
 	tran_id		CHAR(60)		NOT NULL		COMMENT '交 易 ID',
 	user_id		CHAR(32)   	    	NOT NULL 		COMMENT '用 户 ID',
 	user_phone	CHAR(11)   	    	NOT NULL 		COMMENT '用户手机号',
@@ -54,7 +53,7 @@ CREATE TABLE IF NOT EXISTS car_transaction_311(
 	status		INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT '当前状态',
 	create_at	INT UNSIGNED		NOT NULL		COMMENT	'创建时间',
 	update_at	INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT	'更新时间',
-	INDEX car_transaction_311( user_id, merchant_id, tran_id )
+	INDEX car_transaction_311( user_id, merchant_id )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='石家庄商家交易表';
 
 /*
@@ -65,9 +64,9 @@ CREATE TABLE IF NOT EXISTS car_transaction_311(
  *  status      ：0 支付, 1 退款
  *
  ********************************************************************************************/
-DROP TABLE IF EXISTS car_transaction_foot_319;
+DROP TABLE IF EXISTS car_transaction_319;
 CREATE TABLE IF NOT EXISTS car_transaction_319(
-	id		INT UNSIGNED		NOT NULL		COMMENT '表    ID',
+	id		INT UNSIGNED		NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '表    ID',
 	tran_id		CHAR(60)		NOT NULL		COMMENT '交 易 ID',
 	user_id		CHAR(32)   	    	NOT NULL 		COMMENT '用 户 ID',
 	user_phone	CHAR(11)   	    	NOT NULL 		COMMENT '用户手机号',
@@ -83,6 +82,5 @@ CREATE TABLE IF NOT EXISTS car_transaction_319(
 	status		INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT '当前状态',
 	create_at	INT UNSIGNED		NOT NULL		COMMENT	'创建时间',
 	update_at	INT UNSIGNED		NOT NULL DEFAULT 0	COMMENT	'更新时间',
-	INDEX car_transaction_319( user_id, merchant_id, tran_id )
+	INDEX car_transaction_319( user_id, merchant_id )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='邢台商家交易表';
-

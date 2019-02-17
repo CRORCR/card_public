@@ -20,6 +20,10 @@ func (this *RPCServer) Start() {
 	staff := new(modes.Staff)
 	rpc.Register(staff)
 
+	transaction := new(modes.TransactionFoot)
+        rpc.Register(transaction)
+
+
 	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7003")
 	if err != nil {
 		fmt.Println("错误了哦")

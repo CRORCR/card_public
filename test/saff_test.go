@@ -14,14 +14,14 @@ import (
  * @create 2019/1/20
  */
 func TestStaff(t *testing.T) {
-	addStaff()
-	//getStaff()
+	//addStaff()
+	getStaff()
 	//updateStaff()
 	//delStaff()
 	//getMerId()
 	//addAuthority()
 	//getAuthorityOfStaff()
-	getAreaNumber()
+	//getAreaNumber()
 }
 
 //添加员工
@@ -33,7 +33,7 @@ func addStaff() {
 	}
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
-		MerchantId: "11", UserId: "1101", Name: "yaungong", Phone: "17600381284",
+		MerchantId: "11", UserId: "1122", Name: "李1全", Phone: "17600381285",
 		Sex:        1, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Add", &add, &s)
@@ -69,7 +69,7 @@ func getStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	sta := modes.Staff{UserId: "aa1212c4503999b2ce53e8dcc8eab98c"}
+	sta := modes.Staff{UserId: "c1cbca6d38d79b0e55b359c07c9c009c"}
 	out := modes.Staff{}
 	err = client.Call("Staff.Get", &sta, &out)
 	if err != nil {

@@ -30,11 +30,11 @@ CREATE TABLE IF NOT EXISTS chi_staff_310(
         name	   	CHAR(50)        NOT NULL                COMMENT '姓    名',
         phone	   	CHAR(11)        NOT NULL                COMMENT '手 机 号',
 	number_id	CHAR(18)	NOT NULL DEFAULT ''	COMMENT '身份证号',
-	sex		BOOLEAN		NOT NULL 		COMMENT '性    别',
+	sex		tinyint(1)		NOT NULL 		COMMENT '性    别',
 	create_at	INT UNSIGNED    NOT NULL		COMMENT '创建时间',
 	state		INT UNSIGNED	NOT NULL		COMMENT '状    态',
 	number_fage	INT UNSIGNED 	NOT NULL		COMMENT '身份标识',
-	authority       INT UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
+	authority       BIGINT UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
         INDEX chi_staff_310( merchant_id, user_id, phone, number_fage )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='河北-邯郸商家员工表';
 
@@ -50,11 +50,11 @@ CREATE TABLE IF NOT EXISTS chi_staff_319(
         name	   	CHAR(50)        NOT NULL                COMMENT '姓    名',
         phone	   	CHAR(11)        NOT NULL                COMMENT '手 机 号',
 	number_id	CHAR(18)	NOT NULL DEFAULT ''	COMMENT '身份证号',
-	sex		BOOLEAN		NOT NULL 		COMMENT '性    别',
+	sex		tinyint(1)	NOT NULL 		COMMENT '性    别',
 	create_at	INT UNSIGNED    NOT NULL		COMMENT '创建时间',
 	state		INT UNSIGNED	NOT NULL		COMMENT '状    态',
 	number_fage	INT UNSIGNED 	NOT NULL		COMMENT '身份标识',
-	authority       INT UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
+	authority       BIGINT(21) UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
         INDEX chi_staff_319( merchant_id, user_id, phone, number_fage )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='河北-邢台商家员工表';
 
@@ -70,11 +70,11 @@ CREATE TABLE IF NOT EXISTS chi_staff_311(
         name	   	CHAR(50)        NOT NULL                COMMENT '姓    名',
         phone	   	CHAR(11)        NOT NULL                COMMENT '手 机 号',
 	number_id	CHAR(18)	NOT NULL DEFAULT ''	COMMENT '身份证号',
-	sex		BOOLEAN		NOT NULL 		COMMENT '性    别',
+	sex		tinyint(1)	NOT NULL 		COMMENT '性    别',
 	create_at	INT UNSIGNED    NOT NULL		COMMENT '创建时间',
 	state		INT UNSIGNED	NOT NULL		COMMENT '状    态',
 	number_fage	INT UNSIGNED 	NOT NULL		COMMENT '身份标识',
-	authority       INT UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
+	authority       BIGINT(21) UNSIGNED	NOT NULL DEFAULT 0	COMMENT '权    限',
         INDEX chi_staff_311( merchant_id, user_id, phone, number_fage )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='河北-石家庄商家员工表';
 
