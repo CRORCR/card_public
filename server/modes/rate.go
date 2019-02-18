@@ -58,12 +58,12 @@ func (this YoawoRate) GetListByName( inPara *YoawoRate, outPara *[]YoawoRate )er
 */
 func (this YoawoRate)U( inPara, outPara *YoawoRate )error{
 	var err error
-	if inPara.Rate1 > 6 ||
-	   inPara.Rate2 > 6 ||
-	   inPara.Rate3 > 6 ||
-	   inPara.Rate4 > 6 ||
-	   inPara.Rate5 > 6 ||
-	   inPara.Rate6 > 6 ||
+	if inPara.Rate1 > 6 &&
+	   inPara.Rate2 > 6 &&
+	   inPara.Rate3 > 6 &&
+	   inPara.Rate4 > 6 &&
+	   inPara.Rate5 > 6 &&
+	   inPara.Rate6 > 6 &&
 	   inPara.Rate7 > 6 {
 	   _, err = db.GetDBHand(0).Where("class_id = ? AND level_id = ?", inPara.ClasId, inPara.LevelId ).
 			        Cols("rate_1").

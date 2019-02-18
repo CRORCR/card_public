@@ -1,6 +1,7 @@
 package modes
 
 import (
+	
 	"errors"
 	"fmt"
 	"public/lib"
@@ -91,6 +92,7 @@ func (this *MerchantInfo) Transaction(fAmount float64) error {
 	if nil == err {
 		this.Count++
 		this.Amount += fAmount
+		this.NowAmount += fAmount
 		if lib.IsToday(this.UnixTime) {
 			this.DayAmount += fAmount
 		} else {
@@ -188,6 +190,10 @@ func (this *MerchantInfo) Get() error {
 		this.Amount, _ = strconv.ParseFloat(sKey["Amount"], 64)           // 所有交易金额
 		this.NowAmount, _ = strconv.ParseFloat(sKey["NowAmount"], 64)     // 当前金额
 		this.DayAmount, _ = strconv.ParseFloat(sKey["DayAmount"], 64)     // 今日交易金额
+	}
+	if !lib.IsToday(this.UnixTime) {
+		this.TarNumber = 0
+		this.DayAmount = 0
 	}
 	return sErr
 }
@@ -375,7 +381,7 @@ func (this *Merchant) Add(inPara, outPara *Merchant) error {
 		staff.Phone = inPara.Phone            // 员工手机号
 		staff.UserId = inPara.UserId          // 员 工 ID
 		staff.CreateAt = inPara.CreateAt      // 创建时间
-		staff.State = 0                       // 状    态
+		staff.State = 1                       // 状    态
 		staff.NumberFage = 1                  // 身份标识
 		staff.Authority = 9223372036854775807 // 权    限
 		add.PStaff = staff
@@ -643,5 +649,21 @@ func (this *Merchant) Trading(inPara, outPara *Merchant) error {
 		return err
 	}
 	return errors.New("成员属性 MerchantId 不可以为空")
+}
+
+
+/*
+ * desc: TEST
+ *
+ *************************************************************************************/
+func (this *Merchant) Test(inPara, outPara *Merchant) error {
+	RedisParam := redis.GeoRadiusQuery{
+		Radius: 20,
+		Unit:   "km",
+	}
+	GeoLocationList, err := db.GetRedis().GeoRadius(AREA_LIST, inPara.Longitude, inPara.Latitude, &RedisParam).Result()
+	fmt.Println(GeoLocationList)
+	fmt.Println(err)
+	return err
 }
 

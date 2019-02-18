@@ -18,6 +18,7 @@ type StaffInfo struct {
 	UserId     string // 员工ID
 	Name       string // 员工姓名
 	MerchantId string // 商家ID
+	Phone      string // 员工手机号
 	AreaNumber int64  // 商家所在地的区号
 	Identity   int64  // 身份类型 1: 店主 2: 员工
 }
@@ -36,6 +37,7 @@ func (this *StaffInfo) getAll() error {
 	if nil == sErr {
 		this.UserId, _ = sKey["UserId"]
 		this.MerchantId, _ = sKey["MerchantId"]
+		this.Phone, _ = sKey["Phone"]
 		this.Name = sKey["Name"]
 		this.AreaNumber, _ = strconv.ParseInt(sKey["AreaNumber"], 10, 64)
 		this.Identity, _ = strconv.ParseInt(sKey["Identity"], 10, 64)
@@ -44,19 +46,32 @@ func (this *StaffInfo) getAll() error {
 }
 
 /*
+ * 描述: 删除员工
+ *
+ *	前置条件: UserId 与 Phone 不可以为空
+ *
+ *************************************************************************/
+func (this *StaffInfo) Del() {
+	client := db.GetRedis()
+	strKey := fmt.Sprintf("%s%s", STAFF_PHONE, this.Phone)
+	client.Del(this.name())
+	client.Del(strKey)
+}
+
+/*
  * 描述: 添加员工
  *
  *************************************************************************/
-func (this *StaffInfo) addStaff( strPhone string ) error {
+func (this *StaffInfo) addStaff(strPhone string) error {
 	mapStaff := lib.ToMap(*this)
 	bn, _ := db.GetRedis().Exists(this.name()).Result()
 	if 1 == bn {
-		return errors.New(fmt.Sprintf("%s : 此用户以存在!", this.UserId))
+		return errors.New(fmt.Sprintf("%s : 此用户已经存在!", this.UserId))
 	}
 	_, err := db.GetRedis().HMSet(this.name(), mapStaff).Result()
 	if nil == err {
-		strKey := fmt.Sprintf("%s%s", STAFF_PHONE, strPhone )
-		db.GetRedis().Set( strKey, mapStaff["UserId"], 0 )
+		strKey := fmt.Sprintf("%s%s", STAFF_PHONE, strPhone)
+		db.GetRedis().Set(strKey, mapStaff["UserId"], 0)
 	}
 	return err
 }
@@ -65,13 +80,10 @@ func (this *StaffInfo) addStaff( strPhone string ) error {
  * 描述: 获取用户ID 
  *
  *************************************************************************/
-func (this *StaffInfo)getUserId( strPhone string ) error {
+func (this *StaffInfo) getUserId(strPhone string) error {
 	var err error
-	fmt.Println("strPhone",strPhone)
-	strKey := fmt.Sprintf("%s%s", STAFF_PHONE, strPhone )
-	fmt.Println("strKey",strKey)
-	this.UserId, err = db.GetRedis().Get( strKey ).Result()
-	fmt.Println("get redis:",this.UserId,err)
+	strKey := fmt.Sprintf("%s%s", STAFF_PHONE, strPhone)
+	this.UserId, err = db.GetRedis().Get(strKey).Result()
 	return err
 }
 
@@ -89,10 +101,9 @@ func (this *StaffInfo) getIdentity() int64 {
  *
  *************************************************************************/
 func (this *StaffInfo) getAreaNumber() int64 {
-        nIdentity, _ := db.GetRedis().HGet(this.name(), "AreaNumber").Int64()
-        return nIdentity
+	nIdentity, _ := db.GetRedis().HGet(this.name(), "AreaNumber").Int64()
+	return nIdentity
 }
-
 
 /*
  * 描述：商家员工表字段说明
@@ -164,14 +175,13 @@ func ( this *Staff )GetAreaNumber( strUserId *string, nAreaNumber *int64 )error{
  * 描述: 使用手机号换取用户ID
  *
  ****************************************************************************/
-func ( this *Staff )GetUserId( strPhone *string, strUserId *string )error{
-	fmt.Println("strPhone:",strPhone)
+func (this *Staff) GetUserId(strPhone *string, strUserId *string) error {
 	var staff StaffInfo
-	err := staff.getUserId( *strPhone )
-        if nil == err { 
-                *strUserId = staff.UserId
-        }
-        return err
+	err := staff.getUserId(*strPhone)
+	if nil == err {
+		*strUserId = staff.UserId
+	}
+	return err
 }
 
 /*
@@ -311,8 +321,12 @@ func (this *Staff) Add(inPara *AddStaff, outPara *Staff) error {
 	val.UserId = inPara.PStaff.UserId
 	val.AreaNumber = inPara.AreaNumber
 	val.Identity = inPara.PStaff.NumberFage
-	if err = val.addStaff( inPara.PStaff.Phone ); nil == err {
+	val.Phone = inPara.PStaff.Phone
+	if err = val.addStaff(inPara.PStaff.Phone); nil == err {
 		_, err = db.GetDBHand(0).Table(inPara.PStaff.name()).Insert(&inPara.PStaff)
+		if nil != err {
+			val.Del()
+		}
 	}
 	return err
 }
@@ -331,9 +345,17 @@ func (this *Staff) Update(inPara *AddStaff, outPara *Staff) error {
  * 
  **************************************************************************/
 func (this *Staff) Del(inPara, outPara *Staff) error {
-	_, err := db.GetDBHand(0).Table(inPara.name()).
-		Where("user_id = ?", inPara.UserId).
-		Delete(inPara)
+	var val StaffInfo
+	val.UserId = inPara.UserId
+	err := val.getAll()
+	if nil == err {
+		_, err = db.GetDBHand(0).Table(inPara.name()).
+			Where("user_id = ?", inPara.UserId).
+			Delete(inPara)
+		if nil == err {
+			val.Del()
+		}
+	}
 	return err
 }
 /*
