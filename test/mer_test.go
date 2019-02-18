@@ -21,13 +21,14 @@ type CoordinatesPoint struct {
 }
 
 func TestMer(t *testing.T) {
-	addMer() //添加商家信息
-	getMer()  //获得商家信息
-	getMerStaff() //查询商家所有员工
-	UpdateTrust() //更新锘豆
-	UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
-	getMargin()    //获得20公里以内的所有商家
-	addBranch()
+	//addMer() //添加商家信息
+	//getMer()  //获得商家信息
+	//getMerStaff() //查询商家所有员工
+	//UpdateTrust() //更新锘豆
+	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
+	//getMargin()    //获得20公里以内的所有商家
+	//addBranch()
+	getAllBranch()
 }
 
 //添加商家信息
@@ -84,7 +85,7 @@ func addBranch() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer:=modes2.MerchantAddBranch{Superior:"11",Lower:"33"}
+	mer:=modes2.MerchantAddBranch{Superior:"b97c6afce65859df44c3b1b0acc64dd9",Lower:"44"}
 	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.AddBranch", &mer, &mer2)
 	if err != nil {
@@ -181,4 +182,22 @@ func getMargin() {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Printf("调用结果:%+v\n", mer)
+}
+
+func getAllBranch() {
+	// 123456789 123456789_311 123456789_319
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+		return
+	}
+	fmt.Println("连接RPC服务成功")
+	var merc modes2.Merchant
+	var list modes2.MerchantList
+	merc.MerchantId = "b97c6afce65859df44c3b1b0acc64dd9"
+	err = client.Call("Merchant.GetAllBranch", &merc, &list)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", list)
 }

@@ -21,8 +21,10 @@ func (this *RPCServer) Start() {
 	rpc.Register(staff)
 
 	transaction := new(modes.TransactionFoot)
-        rpc.Register(transaction)
+	rpc.Register(transaction)
 
+	rate := new(modes.YoawoRate)
+	rpc.Register(rate)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7003")
 	if err != nil {

@@ -54,9 +54,9 @@ type TransactionFoot struct {
 	Amount       float64 `json:"amount" xorm:"amount"`               // 交易金额
 	RefundAmount float64 `json:"refund_amount" xorm:"refund_amount"` // 退款金额
 	MerBalance   float64 `json:"mer_balance" xorm:"mer_balance"`     // 商户余额
-	TranType     int64   `json:"tran_type" xorm:"tran_type"`         // 交易类型
+	TranType     int64   `json:"tran_type" xorm:"tran_type"`         // 交易类型  0:现金  1:诺
 	NoteTest     string  `json:"note_test" xorm:"note_test"`         // 备    注
-	Status       int64   `json:"status" xorm:"status"`               // 当前状态
+	Status       int64   `json:"status" xorm:"status"`               // 当前状态  0:支付  1:退款
 	CreateAt     int64   `json:"create_at" xorm:"create_at"`         // 创建时间
 	UpdateAt     int64   `json:"update_at" xorm:"update_at"`         // 更新时间
 }

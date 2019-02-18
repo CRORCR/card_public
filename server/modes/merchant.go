@@ -1,17 +1,17 @@
 package modes
 
 import (
-	"public/lib"
-	"public/server/db"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis"
+	"public/lib"
+	"public/server/db"
 	"sort"
-	"time"
 	"strconv"
 	"strings"
-)
+	"time"
 
+	"github.com/go-redis/redis"
+)
 const MERCHANT = "MERCHANT_"  // 商家哈西列表
 const AREA_LIST = "AREA_LIST" // 商家地理位置坐标
 const BRANCH = "BRANCH_SET_"  // 商家分店列表
@@ -23,12 +23,12 @@ type MerchantInfo struct {
 	AreaNumber  int64   // 商家所在区的ID
 	BucklePoint float64 // 本商当前费率
 	Count       int64   // 商家交易次数
-	Amount	    float64	// 所有交易金额
-	NowAmount   float64	// 当前金额
+	Amount      float64 // 所有交易金额
+	NowAmount   float64 // 当前金额
 	//----------------------------------------------------------------------------
-	UnixTime    int64	// 时间标志
-	TarNumber   int64	// 商家交易编号标志量( 从1递增,步长 1 )
-	DayAmount   float64	// 今日交易金额
+	UnixTime  int64   // 时间标志
+	TarNumber int64   // 商家交易编号标志量( 从1递增,步长 1 )
+	DayAmount float64 // 今日交易金额
 }
 
 func (this *MerchantInfo) Name() string {
@@ -43,14 +43,14 @@ func (this *MerchantInfo) BranchAreaNumber() string {
  * 描述: 获取本单的编号
  *
  *************************************************************/
-func (this *MerchantInfo)GetTarNumber() error {
+func (this *MerchantInfo) GetTarNumber() error {
 	err := this.Get()
 	if nil == err {
-		if lib.IsToday( this.UnixTime ){
+		if lib.IsToday(this.UnixTime) {
 			this.TarNumber += 1
-			return db.GetRedis().HIncrBy(this.Name(), "TarNumber", 1 ).Err()
-		}else{
-			this.UnixTime  = time.Now().Unix()
+			return db.GetRedis().HIncrBy(this.Name(), "TarNumber", 1).Err()
+		} else {
+			this.UnixTime = time.Now().Unix()
 			this.TarNumber = 1
 			this.DayAmount = 0
 		}
@@ -58,7 +58,6 @@ func (this *MerchantInfo)GetTarNumber() error {
 	}
 	return err
 }
-
 
 /*
  * 描述: 获取本商家的区号
@@ -81,31 +80,28 @@ func (this *MerchantInfo) Delete() {
 	db.GetRedis().Del(this.BranchAreaNumber())
 }
 
-
-
 /*
  * 描述: 商家交易
  *
  *	fAmount : 交易金额
  *
  *************************************************************/
-func (this *MerchantInfo)Transaction( fAmount float64 ) error {
+func (this *MerchantInfo) Transaction(fAmount float64) error {
 	err := this.Get()
 	if nil == err {
 		this.Count++
 		this.Amount += fAmount
-		if lib.IsToday( this.UnixTime ){
+		if lib.IsToday(this.UnixTime) {
 			this.DayAmount += fAmount
-		}else{
-			this.UnixTime  = time.Now().Unix()
+		} else {
+			this.UnixTime = time.Now().Unix()
 			this.TarNumber = 1
-			this.DayAmount = 0
+			this.DayAmount = fAmount
 		}
 		err = this.Set()
 	}
 	return err
 }
-
 
 /*
  * 描述: 获取本商家的当前费率
@@ -124,9 +120,8 @@ func (this *MerchantInfo) GetBucklePoint() error {
  *
  *************************************************************/
 func (this *MerchantInfo) SetBucklePoint() error {
-	return db.GetRedis().HSet( this.Name(), "BucklePoint", this.BucklePoint ).Err()
+	return db.GetRedis().HSet(this.Name(), "BucklePoint", this.BucklePoint).Err()
 }
-
 
 /*
  * 描述: 添加商家
@@ -186,13 +181,13 @@ func (this *MerchantInfo) Get() error {
 		this.UserId, _ = sKey["UserId"]
 		this.MerchantId, _ = sKey["MerchantId"]
 		this.AreaNumber, _ = strconv.ParseInt(sKey["AreaNumber"], 10, 64)
-		this.Count,_	   = strconv.ParseInt(sKey["Count"], 10, 64)
-		this.UnixTime,_    = strconv.ParseInt(sKey["UnixTime"], 10, 64)
-		this.TarNumber,_   = strconv.ParseInt(sKey["TarNumber"], 10, 64)
-		this.BucklePoint,_ = strconv.ParseFloat( sKey["BucklePoint"], 64 )  // 本商当前费率
-		this.Amount,_      = strconv.ParseFloat( sKey["Amount"], 64 )       // 所有交易金额
-		this.NowAmount,_   = strconv.ParseFloat( sKey["NowAmount"], 64 )    // 当前金额
-		this.DayAmount,_   = strconv.ParseFloat( sKey["DayAmount"], 64 )    // 今日交易金额
+		this.Count, _ = strconv.ParseInt(sKey["Count"], 10, 64)
+		this.UnixTime, _ = strconv.ParseInt(sKey["UnixTime"], 10, 64)
+		this.TarNumber, _ = strconv.ParseInt(sKey["TarNumber"], 10, 64)
+		this.BucklePoint, _ = strconv.ParseFloat(sKey["BucklePoint"], 64) // 本商当前费率
+		this.Amount, _ = strconv.ParseFloat(sKey["Amount"], 64)           // 所有交易金额
+		this.NowAmount, _ = strconv.ParseFloat(sKey["NowAmount"], 64)     // 当前金额
+		this.DayAmount, _ = strconv.ParseFloat(sKey["DayAmount"], 64)     // 今日交易金额
 	}
 	return sErr
 }
@@ -206,7 +201,6 @@ func (this *MerchantInfo) Set() error {
 	_, err := db.GetRedis().HMSet(this.Name(), mapMerchant).Result()
 	return err
 }
-
 
 //*****************以下是提供外部rpc调用**************************************
 /*
@@ -222,7 +216,7 @@ type Merchant struct {
 	UserId       string  `json:"user_id" xorm:"user_id"`             //用户分享ID
 	InviteCode   string  `json:"invite_code" xorm:"invite_code"`     //商家邀请码
 	MerchantType int64   `json:"merchant_type" xorm:"merchant_type"` //商家 行业 类型
-	MerchantRate float64 `json:"merchant_rate" xorm:"rate"`             //商家 行业 利率
+	MerchantRate float64 `json:"rate" xorm:"rate"`                   //商家 行业 利率
 	//TrustStatus  bool    `json:"trust_status" xorm:"trust_status"`   //是否诺商家 0 否 1 是
 	AreaNumber  int64   `json:"area_number" xorm:"area_number"` //市 I   D
 	AreaId      int64   `json:"area_id" xorm:"area_id"`         //县 I   D
@@ -283,38 +277,38 @@ func (this *Merchant) Get(inPara, outPara *Merchant) error {
  * desc: 获取本单交易单号
  *
  *************************************************************************************/
-func (this *Merchant)GetTarNumber(inPara *string, outPara *string) error {
+func (this *Merchant) GetTarNumber(inPara *string, outPara *string) error {
 	var val MerchantInfo
 	val.MerchantId = *inPara
 	err := val.GetTarNumber()
 	if nil == err {
-		*outPara = fmt.Sprintf("%s",val.TarNumber)
+		*outPara = fmt.Sprintf("%s", val.TarNumber)
 	}
 	return err
 }
 
-
 type MerchantAmount struct {
-	Count       int64       // 商家交易次数
-	Amount      float64     // 所有交易金额
-	NowAmount   float64     // 当前金额
-	TarNumber   int64       // 今日交易次数
-	DayAmount   float64     // 今日交易金额
+	Count     int64   // 商家交易次数
+	Amount    float64 // 所有交易金额
+	NowAmount float64 // 当前金额
+	TarNumber int64   // 今日交易次数
+	DayAmount float64 // 今日交易金额
 }
+
 /*
  * desc: 获取本商家金额信息
  *
  *************************************************************************************/
-func (this *Merchant)GetMerchantAmount(inPara *string, outPara *MerchantAmount) error {
+func (this *Merchant) GetMerchantAmount(inPara *string, outPara *MerchantAmount) error {
 	var val MerchantInfo
 	val.MerchantId = *inPara
 	err := val.Get()
 	if nil == err {
-		outPara.Count		= val.Count
-		outPara.Amount		= val.Amount
-		outPara.NowAmount	= val.NowAmount
-		outPara.TarNumber	= val.TarNumber
-		outPara.DayAmount	= val.DayAmount
+		outPara.Count = val.Count
+		outPara.Amount = val.Amount
+		outPara.NowAmount = val.NowAmount
+		outPara.TarNumber = val.TarNumber
+		outPara.DayAmount = val.DayAmount
 	}
 	return err
 }
@@ -330,7 +324,7 @@ func (this *Merchant) UpdateRate(inPara, outPara *Merchant) error {
 		Update(inPara)
 	if err == nil {
 		var val MerchantInfo
-		val.MerchantId  = inPara.MerchantId
+		val.MerchantId = inPara.MerchantId
 		val.BucklePoint = inPara.MerchantRate
 		err = val.SetBucklePoint()
 	}
@@ -371,21 +365,22 @@ func (this *Merchant) Add(inPara, outPara *Merchant) error {
 	if inPara.InviteCode == "" {
 		return errors.New("邀请码获取失败")
 	}
+	fmt.Println("费率", outPara.MerchantRate)
 	_, err := db.GetDBHand(0).Table(inPara.name()).Insert(outPara)
 	if nil == err {
 		var add AddStaff
 		var staff Staff
-		staff.Name = inPara.UserName         // 员工姓名
-		staff.MerchantId = inPara.MerchantId // 商 家 ID
-		staff.Phone = inPara.Phone           // 员工手机号
-		staff.UserId = inPara.UserId         // 员 工 ID
-		staff.CreateAt = inPara.CreateAt     // 创建时间
-		staff.State = 0                      // 状    态
-		staff.NumberFage = 1                 // 身份标识
-		staff.Authority = 9223372036854775807  // 权    限
+		staff.Name = inPara.UserName          // 员工姓名
+		staff.MerchantId = inPara.MerchantId  // 商 家 ID
+		staff.Phone = inPara.Phone            // 员工手机号
+		staff.UserId = inPara.UserId          // 员 工 ID
+		staff.CreateAt = inPara.CreateAt      // 创建时间
+		staff.State = 0                       // 状    态
+		staff.NumberFage = 1                  // 身份标识
+		staff.Authority = 9223372036854775807 // 权    限
 		add.PStaff = staff
 		add.AreaNumber = inPara.AreaNumber
-		fmt.Println("商家入驻管理员信息:", staff )
+		fmt.Println("商家入驻管理员信息:", staff)
 		err = staff.Add(&add, &staff)
 	}
 	return err
@@ -525,7 +520,7 @@ func (this *Merchant) GetStaff(inPara *Merchant, outPara *StaffList) error {
 type CoordinatesPoint struct {
 	Longitude float64 //经  度
 	Latitude  float64 //纬  度
-	Page      int	  //页  码
+	Page      int     //页  码
 	OfferSet  int     //偏移量
 }
 
@@ -541,7 +536,23 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 		return err
 	}
 
-	radius = radius[(inPara.Page-1)*inPara.OfferSet : (inPara.Page-1)*inPara.OfferSet+inPara.OfferSet] //分页处理
+	//radius = radius[(inPara.Page-1)*inPara.OfferSet : (inPara.Page-1)*inPara.OfferSet+inPara.OfferSet] //分页处理
+	start := (inPara.Page - 1) * inPara.OfferSet
+	end := (inPara.Page-1)*inPara.OfferSet + inPara.OfferSet
+	if start >= len(radius)-1 {
+		return errors.New("result is empty.")
+	}
+	if end > len(radius) {
+		end = len(radius)-1
+	}
+
+	radius = radius[start: end] //分页处理
+	//表名对应所有的shareid取出
+	for i := 0; i < len(radius); i++ {
+		//数组第一个元素是表名   后面是share_id
+		addRadiueSelice(radius[i][0], radius[i][1])
+	}
+
 	//表名对应所有的shareid取出
 	for i := 0; i < len(radius); i++ {
 		//数组第一个元素是表名   后面是share_id
@@ -633,3 +644,4 @@ func (this *Merchant) Trading(inPara, outPara *Merchant) error {
 	}
 	return errors.New("成员属性 MerchantId 不可以为空")
 }
+
