@@ -23,12 +23,12 @@ type CoordinatesPoint struct {
 func TestMer(t *testing.T) {
 	//addMer() //添加商家信息
 	//getMer()  //获得商家信息
-	//getMerStaff() //查询商家所有员工
+	getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
 	//getMargin()    //获得20公里以内的所有商家
 	//addBranch()
-	getAllBranch()
+	//getAllBranch()
 }
 
 //添加商家信息
@@ -41,9 +41,9 @@ func addMer() {
 	fmt.Println("连接RPC服务成功")
 	mer := modes2.Merchant{
 		Phone:      "15517158532",
-		MerchantId: "33",
-		UserName:   "奇葩二号店",
-		UserId:     "1ee395a8ee243cc1c440e4e52bff3384",
+		MerchantId: "55",
+		UserName:   "奇葩五号店",
+		UserId:     "53792f5ad648dfd57f4ff8efba5e3c73",
 		AreaNumber: 310,
 		Longitude:  116.404,
 		Latitude:   39.915,
@@ -66,7 +66,7 @@ func getMer() {
 	fmt.Println("连接RPC服务成功")
 
 	mer := modes2.Merchant{
-		MerchantId: "11",
+		MerchantId: "55",
 	}
 	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.Get", &mer, &mer2)
@@ -85,7 +85,7 @@ func addBranch() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer:=modes2.MerchantAddBranch{Superior:"b97c6afce65859df44c3b1b0acc64dd9",Lower:"44"}
+	mer:=modes2.MerchantAddBranch{Superior:"b97c6afce65859df44c3b1b0acc64dd9",Lower:"55"}
 	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.AddBranch", &mer, &mer2)
 	if err != nil {
@@ -105,7 +105,7 @@ func getMerStaff() {
 
 	var merc modes2.Merchant
 	var mer modes2.StaffList
-	merc.MerchantId = "33"
+	merc.MerchantId = "55"
 	err = client.Call("Merchant.GetStaff", &merc, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)

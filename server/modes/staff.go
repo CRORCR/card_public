@@ -219,8 +219,8 @@ func (this *Staff) Get(inPara, outPara *Staff) error {
 }
 
 type StaffAuthority struct {
-	UserId	string
-	Fage	int
+	UserId	string   `json:"user_id"`
+	Fage	int `json:"fage"`
 }
 
 /*
@@ -233,6 +233,7 @@ type StaffAuthority struct {
  *
  *************************************************************************/
 func (this *Staff)SetAuthority( inPara *StaffAuthority , outPara *Staff) error {
+	fmt.Println("xx",inPara.Fage,outPara.Authority)
         outPara.UserId = inPara.UserId
         _, err := db.GetDBHand(0).Table( outPara.name() ).Get( outPara )
 	if nil == err {

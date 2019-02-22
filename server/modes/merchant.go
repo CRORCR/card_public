@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-redis/redis"
 )
+
 const MERCHANT = "MERCHANT_"  // 商家哈西列表
 const AREA_LIST = "AREA_LIST" // 商家地理位置坐标
 const BRANCH = "BRANCH_SET_"  // 商家分店列表
@@ -27,9 +28,9 @@ type MerchantInfo struct {
 	Amount      float64 // 所有交易金额
 	NowAmount   float64 // 当前金额
 	//----------------------------------------------------------------------------
-	UnixTime  int64   // 时间标志
-	TarNumber int64   // 商家交易编号标志量( 从1递增,步长 1 )
-	DayAmount float64 // 今日交易金额
+	UnixTime    int64   // 时间标志
+	TarNumber   int64   // 商家交易编号标志量( 从1递增,步长 1 )
+	DayAmount   float64 // 今日交易金额
 }
 
 func (this *MerchantInfo) Name() string {
@@ -238,14 +239,14 @@ type Merchant struct {
 	InfoImg     string  `json:"infoimg" xorm:"infoimg"`         //商家详情图
 	Video       string  `json:"video" xorm:"video"`             //商家视频介绍
 	CheckDesc   string  `json:"checkdesc" xorm:"checkdesc"`     //认证失败描述
-	Business    string  `json:"business" xorm:"business"`       //营业执照
-	NumberId    string  `json:"number_id" xorm:"number_id"`     //身份证
-	Industry    string  `json:"industry" xorm:"industry"`       //行业许可证
-	Longitude   float64 `json:"longitude" xorm:"longitude"`     //经       度
-	Latitude    float64 `json:"latitude" xorm:"latitude"`       //纬       度
-	Cash        float64 `json:"cash" xorm:"cash"`               //现       金
-	Trust       float64 `json:"trust" xorm:"trust"`             //鍩       分
-	Credits     float64 `json:"credits" xorm:"credits"`         //积       分
+	Business    string  `json:"business" xorm:"business"`       //营 业  执 照
+	NumberId    string  `json:"number_id" xorm:"number_id"`     //身   份   证
+	Industry    string  `json:"industry" xorm:"industry"`       //行 业许可 证
+	Longitude   float64 `json:"longitude" xorm:"longitude"`     //经        度
+	Latitude    float64 `json:"latitude" xorm:"latitude"`       //纬        度
+	Cash        float64 `json:"cash" xorm:"cash"`               //现        金
+	Trust       float64 `json:"trust" xorm:"trust"`             //鍩        分
+	Credits     float64 `json:"credits" xorm:"credits"`         //积        分
 	Distance    float64 `json:"distance" xorm:"-"`              //商家与用户的距离
 }
 
@@ -279,16 +280,23 @@ func (this *Merchant) Get(inPara, outPara *Merchant) error {
 	return err
 }
 
+type TarData struct {
+	MerchantId string	// 入参-商家ID 
+	Amount     int64	// 入参-交易金额
+}
 /*
  * desc: 获取本单交易单号
  *
  *************************************************************************************/
-func (this *Merchant) GetTarNumber(inPara *string, outPara *string) error {
+func (this *Merchant) GetTarNumber(inPara *TarData, outPara *string) error {
 	var val MerchantInfo
-	val.MerchantId = *inPara
+	val.MerchantId = inPara.MerchantId
+	//nY, nM, nD := time.Now().Date()
 	err := val.GetTarNumber()
 	if nil == err {
-		*outPara = fmt.Sprintf("%s", val.TarNumber)
+		//vas := C.EncrData( C.int(inPara.Amount) )
+		//fmt.Println(vas)
+		//*outPara = fmt.Sprintf("%d%.2d%.2d%.8d%.12d",nY, nM, nD, val.TarNumber, uint64(vas) )
 	}
 	return err
 }

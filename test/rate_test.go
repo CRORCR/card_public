@@ -17,10 +17,10 @@ var rateList []*modes.YoawoRate
 
 
 func TestRate(t *testing.T) {
-	getTopList()
+	//getTopList()
 	//getList()
 	//getListByName()
-	//getRateBy()
+	getRateBy()
 	//update()
 }
 
@@ -95,7 +95,6 @@ func getRateBy() error {
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
-	fmt.Println(len(rateList))
 	fmt.Printf("%+v\n",this)
 	return err
 }

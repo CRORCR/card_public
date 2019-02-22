@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/rpc"
 	"public/server/modes"
-	"testing"
 	"time"
 )
 
@@ -47,6 +46,7 @@ func MerchantAdd() {
 	merc.AreaNumber = 319
 	merc.Longitude = 116.404
 	merc.Latitude = 39.915
+	//merc.Rate = 8.6
 	err = client.Call("Merchant.Add", &merc, &mera)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -90,7 +90,6 @@ func MerchantGetAllBranch() {
 	}
 	fmt.Printf("调用结果:%+v\n", list)
 }
-
 func MerchantAskIdentity() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
@@ -108,63 +107,64 @@ func MerchantAskIdentity() {
 	fmt.Printf("调用结果:%+v\n", fage)
 }
 
-func StaffCancelAuthority() {
+func  StaffCancelAuthority() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
 		return
 	}
 	fmt.Println("连接RPC服务成功")
-	var auth modes.StaffAuthority
+	var auth  modes.StaffAuthority
 	var fage modes.Staff
 	auth.UserId = "aaaaaa" // aaaaaa
-	auth.Fage = 3          // aaaaaa
-	err = client.Call("Staff.CancelAuthority", &auth, &fage)
+	auth.Fage   = 3 // aaaaaa
+	err = client.Call("Staff.CancelAuthority", &auth, &fage )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
-	fmt.Printf("%.64b\n", fage.Authority)
+	fmt.Printf("%.64b\n", fage.Authority )
 	fmt.Println("调用结果:", fage)
 }
 
-func TestStaffSet(t *testing.T) {
+func  StaffShowAuthority() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
 		return
 	}
 	fmt.Println("连接RPC服务成功")
-	var auth modes.StaffAuthority
-	var fage modes.Staff
-	auth.UserId = "c1cbca6d38d79b0e55b359c07c9c009c" // aaaaaa
-	auth.Fage = 2                                    // aaaaaa
-	err = client.Call("Staff.SetAuthority", &auth, &fage)
-	if err != nil {
-		fmt.Println("调用失败:", err)
-	}
-	fmt.Printf("%.64b\n", fage.Authority)
-	fmt.Println("调用结果:", fage)
-}
-
-func TestShowAuthority(t *testing.T) {
-	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
-	if err != nil {
-		fmt.Println("连接RPC服务失败:", err)
-		return
-	}
-	fmt.Println("连接RPC服务成功")
-	var auth modes.StaffAuthority
+	var auth  modes.StaffAuthority
 	var fage bool
-	auth.UserId = "c1cbca6d38d79b0e55b359c07c9c009c" //aaaaaa
-	auth.Fage = 2                                    //aaaaaa
-	err = client.Call("Staff.ShowAuthority", &auth, &fage)
+	auth.UserId = "aaaaaa" // aaaaaa
+	auth.Fage   = 1 // aaaaaa
+	err = client.Call("Staff.ShowAuthority", &auth, &fage )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
+	//fmt.Printf("%.64b\n", fage.Authority )
 	fmt.Println("调用结果:", fage)
 }
 
-func StaffGetUserId() {
+func  StaffSetAuthority() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+		return
+	}
+	fmt.Println("连接RPC服务成功")
+	var auth  modes.StaffAuthority
+	var fage modes.Staff
+	auth.UserId = "aaaaaa" // aaaaaa
+	auth.Fage   = 3 // aaaaaa
+	err = client.Call("Staff.SetAuthority", &auth, &fage )
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("%.64b\n", fage.Authority )
+	fmt.Println("调用结果:", fage)
+}
+
+func  StaffGetUserId() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
@@ -173,14 +173,14 @@ func StaffGetUserId() {
 	fmt.Println("连接RPC服务成功")
 	strPhone := "19803091863"
 	var fage string
-	err = client.Call("Staff.GetUserId", &strPhone, &fage)
+	err = client.Call("Staff.GetUserId", &strPhone, &fage )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Println("调用结果:", fage)
 }
 
-func TransactionFootAdd() {
+func TransactionFootAdd(){
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
@@ -189,19 +189,18 @@ func TransactionFootAdd() {
 	fmt.Println("连接RPC服务成功")
 	var tran modes.TransactionFoot
 	tran.TranId = "t123456789"
-	tran.UserId = "aa1212c4503999b2ce53e8dcc8eab98c"
+	tran.UserId = "s123456789"
 	tran.CashierId = "bbbbbb"
-	tran.Amount=1000.01
-	tran.MerchantId = "b97c6afce65859df44c3b1b0acc64dd9"
+	tran.MerchantId = "123456788"
 	tran.CreateAt = time.Now().Unix()
-	err = client.Call("TransactionFoot.Add", &tran, &tran)
+	err = client.Call("TransactionFoot.Add", &tran, &tran )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Println("调用结果:", tran)
 }
 
-func TransactionFootMerchantGetAll() {
+func TransactionFootMerchantGetAll(){
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
@@ -213,14 +212,14 @@ func TransactionFootMerchantGetAll() {
 	mid.Id = "123456789"
 	mid.Count = 15
 	mid.Page = 0
-	err = client.Call("TransactionFoot.MerchantGetAll", &mid, &tran)
+	err = client.Call("TransactionFoot.MerchantGetAll", &mid, &tran )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Println("调用结果:", tran)
 }
 
-func TransactionFootUserGetAll() {
+func TransactionFootUserGetAll(){
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
@@ -229,15 +228,52 @@ func TransactionFootUserGetAll() {
 	fmt.Println("连接RPC服务成功")
 	var tran modes.TransactionList
 	var mid = "s123456789"
-	err = client.Call("TransactionFoot.UserGetAll", &mid, &tran)
+	err = client.Call("TransactionFoot.UserGetAll", &mid, &tran )
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Println("调用结果:", tran)
 }
 
+func MerchantGetTarNumber(){
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+		return
+	}
+	fmt.Println("连接RPC服务成功")
+	var tran modes.TarData
+	tran.MerchantId = "123456789"
+	tran.Amount     = 123456789
+	var mid string
+	err = client.Call("Merchant.GetTarNumber", &tran, &mid )
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Println("调用结果:", mid)
+}
+
+func TransactionFootAll(){
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+		return
+	}
+	fmt.Println("连接RPC服务成功")
+	//var tran modes.TransactionList
+	var mid = "s123456789"
+	err = client.Call("TransactionFoot.All", &mid, nil )
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Println("调用结果:")
+}
+
+
 func main() {
-	StaffGetUserId()
+	TransactionFootAll()
+	//MerchantGetTarNumber()
+	//StaffGetUserId()
 	//TransactionFootAdd()
 	//TransactionFootMerchantGetAll()
 	//TransactionFootUserGetAll()

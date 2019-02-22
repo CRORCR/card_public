@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS car_transaction_310(
 	user_id		CHAR(32)   	    	NOT NULL 		COMMENT '用 户 ID',
 	user_phone	CHAR(11)   	    	NOT NULL 		COMMENT '用户手机号',
 	user_name	VARCHAR(64)   	    	NOT NULL 		COMMENT '用户姓名',
+	merchant_name   VARCHAR(128)		NOT NULL		COMMENT '商家名称',
 	cashier_id	CHAR(32)		NOT NULL		COMMENT '收 银 ID',
 	merchant_id	CHAR(32)   	    	NOT NULL 		COMMENT '商 家 ID',
 	rate		DOUBLE(10,2)		NOT NULL		COMMENT '本单费率金额',

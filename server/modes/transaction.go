@@ -2,6 +2,8 @@ package modes
 
 import (
 	"public/server/db"
+	"time"
+
 	//	"../../lib"
 	//	"strconv"
 	//	"errors"
@@ -50,6 +52,7 @@ type TransactionFoot struct {
 	UserName     string  `json:"user_name" xorm:"user_name"`         // 用户姓名
 	CashierId    string  `json:"cashier_id" xorm:"cashier_id"`       // 收 银 ID
 	MerchantId   string  `json:"merchant_id" xorm:"merchant_id"`     // 商 家 ID
+	MerchantName string  `json:"merchant_name" xorm:"merchant_name"` // 商家名称
 	Rate         float64 `json:"rate" xorm:"rate"`                   // 本单费率金额
 	Amount       float64 `json:"amount" xorm:"amount"`               // 交易金额
 	RefundAmount float64 `json:"refund_amount" xorm:"refund_amount"` // 退款金额
@@ -86,7 +89,9 @@ func (this *TransactionFoot)name()(string, int64 ) {
  *************************************************************************************/
 func (this *TransactionFoot) Get(inPara, outPara *TransactionFoot) error {
 	strName, _ := inPara.name()
-	_, err := db.GetDBHand(0).Table(strName).Where("tran_id = ?", inPara.TranId).Get(outPara)
+	_, err := db.GetDBHand(0).Table( strName ).
+		Where("tran_id = ?", inPara.TranId).
+		Get(outPara)
 	return err
 }
 
@@ -94,7 +99,7 @@ func (this *TransactionFoot) Get(inPara, outPara *TransactionFoot) error {
  * desc: 添加交易
  *
  *************************************************************************************/
-func (this *TransactionFoot) Add(inPara, outPara *TransactionFoot) error {
+func (this *TransactionFoot)Add(inPara, outPara *TransactionFoot) error {
 	strName, nAreaNumber := inPara.name()
 	var err error
 	var user UserFoot
@@ -111,7 +116,7 @@ func (this *TransactionFoot) Add(inPara, outPara *TransactionFoot) error {
 }
 
 type TransactionInfo struct {
-	Id	string	// 商家或用户ID
+	Id	string	// 商家ID或用户ID
 	Count	int	// 单页的数量
 	Page	int	// 页码
 }
@@ -124,12 +129,57 @@ func (this *TransactionFoot)MerchantGetAll(inPara *TransactionInfo, outPara *Tra
 	var val TransactionFoot
 	val.MerchantId = inPara.Id
 	strName, _ := val.name()
-	db.GetDBHand(0).Table( strName ).Where("merchant_id = ?", inPara.Id ).
+	return db.GetDBHand(0).Table( strName ).Where("merchant_id = ?", inPara.Id ).
 					Desc("create_at").
 					Limit( inPara.Count, inPara.Page ).
 					Find( outPara )
-	return nil
 }
+
+type CashierFoot struct {
+        MerchantId	string  // 商家ID、收银员ID
+	CashierId	string  // 收银员ID
+        Count		int     // 单页的数量
+        Page		int     // 页码
+}
+
+/*
+ * desc: 获取指定收银员两天的收款记录
+ *
+ *************************************************************************************/
+func (this *TransactionFoot)CashierGetList(inPara *CashierFoot, outPara *TransactionList )error{
+        var val TransactionFoot
+        val.MerchantId = inPara.MerchantId
+        strName, _ := val.name()
+	nNowTime := time.Now().Unix()
+	//checkTime -= (checkTime + 28800) % 86400
+	nNowTime -= (( nNowTime + 28800 ) % 86400 ) - 86400
+        return db.GetDBHand(0).Table( strName ).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId ).
+					Where( "create_at > ?", nNowTime ).
+                                        Desc("create_at").
+                                        //Limit( inPara.Count, inPara.Page ).
+                                        Find( outPara )
+}
+
+/*
+ * desc: 获取指定收银员两天的收款总和
+ *
+ *************************************************************************************/
+func (this *TransactionFoot)CashierGetSum(inPara *CashierFoot, outPara *float64 )error{
+        var val TransactionFoot
+	var err error
+        val.MerchantId = inPara.MerchantId
+        strName, _ := val.name()
+        nNowTime := time.Now().Unix()
+        //checkTime -= (checkTime + 28800) % 86400
+        nNowTime -= (( nNowTime + 28800 ) % 86400 ) - 86400
+        *outPara,err = db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?",inPara.MerchantId,inPara.CashierId ).
+                                        Where( "create_at > ?", nNowTime ).
+					Sum( *inPara ,"amount")
+                                        //Limit( inPara.Count, inPara.Page ).
+	return err
+}
+
+
 
 /*
  * desc: 获取所有交易记录( 用户 )
@@ -148,4 +198,36 @@ func (this *TransactionFoot)UserGetAll(inPara *string, outPara *TransactionList 
 	sort.Sort(outPara)
 	return sErr
 }
+
+
+
+// =========================================================================================================
+
+func (this *TransactionFoot)All(inPara *string, outPara *[]map[string][]byte )error{
+
+	var err error
+	strSqlHand := fmt.Sprintf("SELECT a.create_at, a.amount, a.oper_type, a.state, a.target_name, a.buy_id FROM ")
+	strWithdrawal := fmt.Sprintf("SELECT 1 AS oper_type, submission_at AS create_at, wit_id AS buy_id, '云握' AS target_name, state, amount FROM chi_withdrawal_foot WHERE user_id = '%s'", *inPara )
+
+	var user UserFoot
+        user.UserId = *inPara
+        silAreaNumber, _ := user.getAll()
+	var strTransaction string
+	for _, v := range silAreaNumber {
+		strTransaction = fmt.Sprintf("%sSELECT 3 AS oper_type, tran_id AS buy_id, status AS state, merchant_name AS target_name, amount, create_at FROM car_transaction_%.3d WHERE user_id = '%s' UNION ALL ",strTransaction, v, *inPara )
+	}
+
+	strExchange := fmt.Sprintf("SELECT 2 AS oper_type, 0 AS state, trust_count AS amount, '云握' AS target_name, 'null' AS buy_id, create_at FROM chi_exchange_foot WHERE user_id = '%s'", *inPara )
+
+	strSqlEnd  := "AS a ORDER BY create_at DESC;"
+
+	strSql := fmt.Sprintf("%s ( %s UNION ALL %s%s ) %s", strSqlHand, strWithdrawal, strTransaction, strExchange , strSqlEnd )
+	fmt.Println("-------------------------------------------------------------------------------------------------")
+	fmt.Println( strSql )
+	fmt.Println("-------------------------------------------------------------------------------------------------")
+        *outPara, err = db.GetDBHand(0).Query( strSql )
+	fmt.Println( outPara )
+        return err
+}
+
 

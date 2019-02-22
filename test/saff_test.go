@@ -16,12 +16,18 @@ import (
 func TestStaff(t *testing.T) {
 	//addStaff()
 	getStaff()
-	//updateStaff()
 	//delStaff()
+
+	//updateStaff()
 	//getMerId()
 	//addAuthority()
 	//getAuthorityOfStaff()
 	//getAreaNumber()
+	//getUserId()
+
+	//addAuthority()
+	//showAuthority()
+	//cancelAuthority()
 }
 
 //添加员工
@@ -33,7 +39,7 @@ func addStaff() {
 	}
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
-		MerchantId: "11", UserId: "1122", Name: "李1全", Phone: "17600381285",
+		MerchantId: "55", UserId: "53792f5ad648dfd57f4ff8efba5e3c76", Name: "李6全", Phone: "17600381285",
 		Sex:        1, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Add", &add, &s)
@@ -52,9 +58,9 @@ func delStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.Staff{UserId: "22yuangogn"}
+	add := modes.Staff{UserId: "53792f5ad648dfd57f4ff8efba5e3c76"}
 	var s modes.Staff
-	err = client.Call("Staff.Delete", &add, &s)
+	err = client.Call("Staff.Del", &add, &s)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
@@ -69,13 +75,16 @@ func getStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	sta := modes.Staff{UserId: "c1cbca6d38d79b0e55b359c07c9c009c"}
-	out := modes.Staff{}
-	err = client.Call("Staff.Get", &sta, &out)
-	if err != nil {
-		fmt.Println("调用失败:", err)
+	var arr =[1]string{"53792f5ad648dfd57f4ff8efba5e3c76"}
+	for i:=0;i<2;i++{
+		sta := modes.Staff{UserId: arr[i]}
+		out := modes.Staff{}
+		err = client.Call("Staff.Get", &sta, &out)
+		if err != nil {
+			fmt.Println("调用失败:", err)
+		}
+		fmt.Printf("调用结果:%+v\n", out) //22
 	}
-	fmt.Printf("调用结果:%+v\n", out) //22
 }
 
 //更新员工信息
@@ -95,6 +104,24 @@ func updateStaff() {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Printf("调用结果:%+v\n", s)
+}
+
+//更新员工信息
+func getUserId() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	var userId string
+	var phone ="17600381284"
+
+	err = client.Call("Staff.GetUserId", &phone, &userId)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", userId)
 }
 
 func getMerId() {
@@ -121,14 +148,47 @@ func addAuthority() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.Staff{UserId: "000",Authority:1}   //增加收银权限
-	//add := modes.Staff{UserId: "000",Authority:0} //减去收银权限
+	add := modes.StaffAuthority{UserId: "000",Fage:4}   //增加收银权限
 	var s modes.Staff
-	err = client.Call("Staff.UpdAuthority", &add, &s)
+	err = client.Call("Staff.SetAuthority", &add, &s)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
 	fmt.Printf("调用结果:%+v\n", s)
+}
+
+//查询权限
+func showAuthority() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	adds:=modes.StaffAuthority{UserId: "000",Fage:4}
+	var s bool
+	err = client.Call("Staff.ShowAuthority", &adds, &s)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", s)
+}
+
+//取消权限
+func cancelAuthority() {
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	fmt.Println("连接RPC服务成功")
+	add := modes.Staff{UserId: "000",Authority:3}   //增加收银权限
+	adds:=modes.StaffAuthority{UserId: "000",Fage:3}
+	err = client.Call("Staff.CancelAuthority", &adds, &add)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", add)
 }
 
 //生成收款码
