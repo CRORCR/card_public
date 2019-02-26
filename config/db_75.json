@@ -5,5 +5,17 @@
     "db_port": 3306,
     "db_name": "dbtest",
     "db_pass": "b!Ac@e#e$a%R^57&Q*C(DF)F_A+S=E"
+  },
+  {
+    "ip_port": "127.0.0.1:6379",
+    "password": "123456",
+    "db": 1
+  },
+  {
+    "db_user": "root",
+    "db_home": "127.0.0.1",
+    "db_port": 3306,
+    "db_name": "yoawo",
+    "db_pass": "123456"
   }
 ]

@@ -14,8 +14,8 @@ import (
  * @create 2019/1/20
  */
 func TestStaff(t *testing.T) {
-	//addStaff()
-	getStaff()
+	addStaff()
+	//getStaff()
 	//delStaff()
 
 	//updateStaff()
@@ -39,7 +39,7 @@ func addStaff() {
 	}
 	fmt.Println("连接RPC服务成功")
 	add := modes.AddStaff{modes.Staff{
-		MerchantId: "55", UserId: "53792f5ad648dfd57f4ff8efba5e3c76", Name: "李6全", Phone: "17600381285",
+		MerchantId: "dpfa6cf8d45c8bef6e0c734bb02a635f", UserId: "dcba95a8ee243cc1c440e4e52bff3384", Name: "店员3", Phone: "15156813885",
 		Sex:        1, CreateAt: time.Now().Unix(), State: 0, NumberFage: 0, Authority: 1}, 310,}
 	var s modes.Staff
 	err = client.Call("Staff.Add", &add, &s)
@@ -48,7 +48,6 @@ func addStaff() {
 	}
 	fmt.Printf("调用结果:%+v\n", s)
 }
-
 
 //删除员工
 func delStaff() {
@@ -75,16 +74,13 @@ func getStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	var arr =[1]string{"53792f5ad648dfd57f4ff8efba5e3c76"}
-	for i:=0;i<2;i++{
-		sta := modes.Staff{UserId: arr[i]}
-		out := modes.Staff{}
-		err = client.Call("Staff.Get", &sta, &out)
-		if err != nil {
-			fmt.Println("调用失败:", err)
-		}
-		fmt.Printf("调用结果:%+v\n", out) //22
+	sta := modes.Staff{UserId: "dcba95a8ee243cc1c440e4e52bff3384"}
+	out := modes.Staff{}
+	err = client.Call("Staff.Get", &sta, &out)
+	if err != nil {
+		fmt.Println("调用失败:", err)
 	}
+	fmt.Printf("调用结果:%+v\n", out) //22
 }
 
 //更新员工信息
@@ -115,7 +111,7 @@ func getUserId() {
 	}
 	fmt.Println("连接RPC服务成功")
 	var userId string
-	var phone ="17600381284"
+	var phone = "13145213417"
 
 	err = client.Call("Staff.GetUserId", &phone, &userId)
 	if err != nil {
@@ -148,7 +144,7 @@ func addAuthority() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.StaffAuthority{UserId: "000",Fage:4}   //增加收银权限
+	add := modes.StaffAuthority{UserId: "000", Fage: 4} //增加收银权限
 	var s modes.Staff
 	err = client.Call("Staff.SetAuthority", &add, &s)
 	if err != nil {
@@ -165,7 +161,7 @@ func showAuthority() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	adds:=modes.StaffAuthority{UserId: "000",Fage:4}
+	adds := modes.StaffAuthority{UserId: "000", Fage: 4}
 	var s bool
 	err = client.Call("Staff.ShowAuthority", &adds, &s)
 	if err != nil {
@@ -182,8 +178,8 @@ func cancelAuthority() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.Staff{UserId: "000",Authority:3}   //增加收银权限
-	adds:=modes.StaffAuthority{UserId: "000",Fage:3}
+	add := modes.Staff{UserId: "000", Authority: 3} //增加收银权限
+	adds := modes.StaffAuthority{UserId: "000", Fage: 3}
 	err = client.Call("Staff.CancelAuthority", &adds, &add)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -199,7 +195,7 @@ func getAuthorityOfStaff() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	add := modes.Staff{UserId: "000",Authority:1}
+	add := modes.Staff{UserId: "000", Authority: 1}
 	var s string
 	err = client.Call("Staff.GetQRCode", &add, &s)
 	if err != nil {
@@ -209,14 +205,14 @@ func getAuthorityOfStaff() {
 }
 
 //测试员工属于哪个区
-func getAreaNumber(){
+func getAreaNumber() {
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
 	if err != nil {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	var input="1ee395a8ee243cc1c440e4e52bff3382"
+	var input = "1ee395a8ee243cc1c440e4e52bff3382"
 	var output int64
 	err = client.Call("Staff.GetAreaNumber", &input, &output)
 	if err != nil {

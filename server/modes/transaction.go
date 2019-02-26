@@ -116,9 +116,10 @@ func (this *TransactionFoot)Add(inPara, outPara *TransactionFoot) error {
 }
 
 type TransactionInfo struct {
-	Id	string	// 商家ID或用户ID
-	Count	int	// 单页的数量
-	Page	int	// 页码
+	Id    string // 商家ID或用户ID
+	Count int    // 单页的数量
+	Page  int    // 页码
+	Where string //自定义查询条件
 }
 
 /*
@@ -129,10 +130,24 @@ func (this *TransactionFoot)MerchantGetAll(inPara *TransactionInfo, outPara *Tra
 	var val TransactionFoot
 	val.MerchantId = inPara.Id
 	strName, _ := val.name()
-	return db.GetDBHand(0).Table( strName ).Where("merchant_id = ?", inPara.Id ).
-					Desc("create_at").
-					Limit( inPara.Count, inPara.Page ).
-					Find( outPara )
+	return db.GetDBHand(0).Table(strName).Where("merchant_id = ?", inPara.Id).
+		Desc("create_at").
+		Limit(inPara.Count, inPara.Page).
+		Find(outPara)
+}
+
+/*
+ * desc: 获取所有交易记录( 商家 )
+ *
+ *************************************************************************************/
+func (this *TransactionFoot) MerchantQuery(inPara *TransactionInfo, outPara *TransactionList) error {
+	var val TransactionFoot
+	val.MerchantId = inPara.Id
+	strName, _ := val.name()
+	return db.GetDBHand(0).Table(strName).Where("merchant_id = ?", inPara.Id).And(inPara.Where).
+		Desc("create_at").
+		Limit(inPara.Count, inPara.Page).
+		Find(outPara)
 }
 
 type CashierFoot struct {
@@ -151,14 +166,40 @@ func (this *TransactionFoot)CashierGetList(inPara *CashierFoot, outPara *Transac
         val.MerchantId = inPara.MerchantId
         strName, _ := val.name()
 	nNowTime := time.Now().Unix()
-	//checkTime -= (checkTime + 28800) % 86400
-	nNowTime -= (( nNowTime + 28800 ) % 86400 ) - 86400
-        return db.GetDBHand(0).Table( strName ).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId ).
-					Where( "create_at > ?", nNowTime ).
-                                        Desc("create_at").
-                                        //Limit( inPara.Count, inPara.Page ).
-                                        Find( outPara )
+
+	nNowTime -= ((nNowTime + 28800) % 86400) - 86400
+	return db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
+		Where("create_at > ?", nNowTime).
+		Desc("create_at").
+		Limit(inPara.Count, inPara.Page).
+		Find(outPara)
 }
+
+/*
+ * desc: 获取指定收银员两天的收款记录和
+ *
+ *************************************************************************************/
+func (this *TransactionFoot) GetUserCash(inPara *CashierFoot, outPara *float64) error {
+	var val TransactionFoot
+	val.MerchantId = inPara.MerchantId
+	strName, _ := val.name()
+	nNowTime := time.Now().Unix()
+	*outPara = -1
+	nNowTime -= ((nNowTime + 28800) % 86400) - 86400
+	f, err := db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
+		Where("create_at > ?", nNowTime).
+		Desc("create_at").Sum(new(struct{ Trust float64 }), "amount")
+	if err != nil {
+		return err
+	}
+	r, err := db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
+		Where("create_at > ?", nNowTime).
+		Desc("create_at").Sum(new(struct{ Trust float64 }), "refund_amount")
+	*outPara = f - r
+	return err
+}
+
+
 
 /*
  * desc: 获取指定收银员两天的收款总和
@@ -199,11 +240,42 @@ func (this *TransactionFoot)UserGetAll(inPara *string, outPara *TransactionList 
 	return sErr
 }
 
+type WhereFind struct {
+	UserId string	// 用户ID
+	Where  string	// SQL 的Where 条件
+	Count  int	// 单页的数量
+	Page   int	// 页码
+}
+/*
+ * desc: 自定义Where条件,获取所有交易记录( 用户 )
+ *
+ *************************************************************************************/
+func (this *TransactionFoot) UserWhereFind(inPara *WhereFind, outPara *TransactionList) error {
+	var user UserFoot
+	user.UserId = inPara.UserId
+	silAreaNumber, sErr := user.getAll()
+	if nil == sErr {
+		for _, v := range silAreaNumber {
+			strTableName := fmt.Sprintf("car_transaction_%s", v)
+			db.GetDBHand(0).Table(strTableName).
+					Where( inPara.Where ).
+					Limit( inPara.Count, inPara.Page ).
+					Find(outPara)
+		}
+	}
+	sort.Sort(outPara)
+	return sErr
+}
 
 
 // =========================================================================================================
-
-func (this *TransactionFoot)All(inPara *string, outPara *[]map[string][]byte )error{
+/*
+查询个人所有的交易记录和提现记录
+提现记录
+交易记录
+叫鸡记录
+*/
+func (this *TransactionFoot) All(inPara *string, outPara *[]map[string][]byte) error {
 
 	var err error
 	strSqlHand := fmt.Sprintf("SELECT a.create_at, a.amount, a.oper_type, a.state, a.target_name, a.buy_id FROM ")

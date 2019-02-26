@@ -46,6 +46,14 @@ func (this *StaffInfo) getAll() error {
 }
 
 /*
+ * 描述: 查看员工存不存在
+ *
+ *************************************************************************/
+func (this *StaffInfo) Exists()( int64,error ) {
+	return db.GetRedis().Exists(this.name()).Result()
+}
+
+/*
  * 描述: 删除员工
  *
  *	前置条件: UserId 与 Phone 不可以为空
@@ -95,6 +103,19 @@ func (this *StaffInfo) getIdentity() int64 {
 	nIdentity, _ := db.GetRedis().HGet(this.name(), "Identity").Int64()
 	return nIdentity
 }
+
+/*
+ * 描述: 根据用户手机号获取用户所属的商家ID
+ *
+ *************************************************************************/
+func (this *StaffInfo) phoneToMerchantId( strPhone string )error{
+	var err error
+	if err = this.getUserId( strPhone ); nil == err {
+		this.MerchantId, err = db.GetRedis().HGet(this.name(), "MerchantId").Result()
+	}
+        return err
+}
+
 
 /*
  * 描述: 获取员工身份标志
@@ -185,6 +206,18 @@ func (this *Staff) GetUserId(strPhone *string, strUserId *string) error {
 }
 
 /*
+ *
+ * 描述: 根据用户手机号获取用户所属的商家ID
+ *
+ ****************************************************************************/
+func (this *Staff)PhoneToMerchantId(strPhone *string, strMerchantId *string) error {
+	var val StaffInfo
+	err := val.phoneToMerchantId( *strPhone )
+	*strMerchantId = val.MerchantId
+	return err
+}
+
+/*
  * 描述: 生成此用户的收款码
  *
  *************************************************************************/
@@ -232,10 +265,9 @@ type StaffAuthority struct {
  *	StaffAuthority.Fage : - 4 提现
  *
  *************************************************************************/
-func (this *Staff)SetAuthority( inPara *StaffAuthority , outPara *Staff) error {
-	fmt.Println("xx",inPara.Fage,outPara.Authority)
-        outPara.UserId = inPara.UserId
-        _, err := db.GetDBHand(0).Table( outPara.name() ).Get( outPara )
+func (this *Staff) SetAuthority(inPara *StaffAuthority, outPara *Staff) error {
+	outPara.UserId = inPara.UserId
+	_, err := db.GetDBHand(0).Table(outPara.name()).Get(outPara)
 	if nil == err {
 		outPara.Authority = outPara.Authority | uint64( math.Pow( float64(2), float64( inPara.Fage - 1 )))
 		_, err = db.GetDBHand(0).Table(outPara.name()).
@@ -278,6 +310,8 @@ func (this *Staff)ShowAuthority( inPara *StaffAuthority , outPara *bool ) error 
 			*outPara = true
 		}
         }
+        fmt.Println("权限值",val.Authority)
+        fmt.Println("权限值",val.Authority&2==2)
         return err
 }
 

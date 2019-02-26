@@ -1,7 +1,6 @@
 package modes
 
 import (
-	"fmt"
 	"public/server/db"
 )
 
@@ -25,9 +24,9 @@ type YoawoRate struct {
 }
 
 func (this *YoawoRate)GetOne( inPara, outPara *YoawoRate )error{
-	fmt.Println(outPara)
-	_, e := db.GetDBHand(0).Table( YOAWORATE ).Where("id=?",inPara.Id).Get( outPara )
-	fmt.Println(outPara)
+	rate:=&YoawoRate{}
+	_, e := db.GetDBHand(0).Table( YOAWORATE ).Where("id=?",inPara.Id).Get( rate )
+	*outPara=*rate
 	return e
 }
 

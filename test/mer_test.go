@@ -23,10 +23,10 @@ type CoordinatesPoint struct {
 func TestMer(t *testing.T) {
 	//addMer() //添加商家信息
 	//getMer()  //获得商家信息
-	getMerStaff() //查询商家所有员工
+	//getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
-	//getMargin()    //获得20公里以内的所有商家
+	getMargin()    //获得20公里以内的所有商家
 	//addBranch()
 	//getAllBranch()
 }
@@ -40,11 +40,11 @@ func addMer() {
 	}
 	fmt.Println("连接RPC服务成功")
 	mer := modes2.Merchant{
-		Phone:      "15517158532",
-		MerchantId: "55",
-		UserName:   "奇葩五号店",
-		UserId:     "53792f5ad648dfd57f4ff8efba5e3c73",
-		AreaNumber: 310,
+		Phone:      "17600381202",
+		MerchantId: "bbbb6cf8d45c8bef6e0c734bb02a635f",
+		UserName:   "奇葩1号店",
+		UserId:     "3dfa6cf8d45c8bef6e0c734bb02abbbb",
+		AreaNumber: 319,
 		Longitude:  116.404,
 		Latitude:   39.915,
 	}
@@ -54,7 +54,6 @@ func addMer() {
 	}
 	fmt.Printf("调用结果:%+v\n", mer)
 }
-
 
 /* 根据商家id 获取商家   必填参数 商家id 必须使用rpc添加的用户才能知道区号*/
 func getMer() {
@@ -66,7 +65,7 @@ func getMer() {
 	fmt.Println("连接RPC服务成功")
 
 	mer := modes2.Merchant{
-		MerchantId: "55",
+		MerchantId: "bbbb6cf8d45c8bef6e0c734bb02a635f",
 	}
 	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.Get", &mer, &mer2)
@@ -85,7 +84,7 @@ func addBranch() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer:=modes2.MerchantAddBranch{Superior:"b97c6afce65859df44c3b1b0acc64dd9",Lower:"55"}
+	mer:=modes2.MerchantAddBranch{Superior:"aaaa6cf8d45c8bef6e0c734bb02a635f",Lower:"bbbb6cf8d45c8bef6e0c734bb02a635f"}
 	mer2 := modes2.Merchant{}
 	err = client.Call("Merchant.AddBranch", &mer, &mer2)
 	if err != nil {
@@ -105,7 +104,7 @@ func getMerStaff() {
 
 	var merc modes2.Merchant
 	var mer modes2.StaffList
-	merc.MerchantId = "55"
+	merc.MerchantId = "dpfa6cf8d45c8bef6e0c734bb02a635f"
 	err = client.Call("Merchant.GetStaff", &merc, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -175,8 +174,8 @@ func getMargin() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	var margin = CoordinatesPoint{114.5315555000, 36.6479443200, 1, 4}
-	mer := make(modes2.MerchantList, 0)
+	var margin = CoordinatesPoint{116.3990880000,39.9096820000, 3, 2}
+	mer := modes2.MerchantList{}
 	err = client.Call("Merchant.GetNearMerchant", &margin, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
