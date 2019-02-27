@@ -1,16 +1,10 @@
 package modes
 
 import (
-	"public/server/db"
+	"card_public/server/db"
 	"time"
-
-	//	"../../lib"
-	//	"strconv"
-	//	"errors"
 	"fmt"
 	"sort"
-	//	"github.com/go-redis/redis"
-	//	"strings"
 )
 
 const USERFOOT = "USER_FOOT_SET_"	// 此用户消费的区的纪录

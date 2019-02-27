@@ -1,8 +1,8 @@
 package modes
 
 import (
-	"public/server/db"
-	"public/lib"
+	"card_public/server/db"
+	"card_public/lib"
 	"errors"
 	"fmt"
 	"strconv"

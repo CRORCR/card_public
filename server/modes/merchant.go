@@ -3,8 +3,8 @@ package modes
 import (
 	"errors"
 	"fmt"
-	"public/lib"
-	"public/server/db"
+	"card_public/lib"
+	"card_public/server/db"
 	"sort"
 	"strconv"
 	"strings"

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"public/lib"
+	"card_public/lib"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/core"

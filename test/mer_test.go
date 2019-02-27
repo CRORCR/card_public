@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"net/rpc"
-	modes2 "public/server/modes"
+	"card_public/server/modes"
 	"testing"
 )
 
@@ -39,7 +39,7 @@ func addMer() {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	fmt.Println("连接RPC服务成功")
-	mer := modes2.Merchant{
+	mer := modes.Merchant{
 		Phone:      "17600381202",
 		MerchantId: "bbbb6cf8d45c8bef6e0c734bb02a635f",
 		UserName:   "奇葩1号店",
@@ -64,10 +64,10 @@ func getMer() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer := modes2.Merchant{
+	mer := modes.Merchant{
 		MerchantId: "bbbb6cf8d45c8bef6e0c734bb02a635f",
 	}
-	mer2 := modes2.Merchant{}
+	mer2 := modes.Merchant{}
 	err = client.Call("Merchant.Get", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -84,8 +84,8 @@ func addBranch() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	mer:=modes2.MerchantAddBranch{Superior:"aaaa6cf8d45c8bef6e0c734bb02a635f",Lower:"bbbb6cf8d45c8bef6e0c734bb02a635f"}
-	mer2 := modes2.Merchant{}
+	mer:=modes.MerchantAddBranch{Superior:"aaaa6cf8d45c8bef6e0c734bb02a635f",Lower:"bbbb6cf8d45c8bef6e0c734bb02a635f"}
+	mer2 := modes.Merchant{}
 	err = client.Call("Merchant.AddBranch", &mer, &mer2)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -102,8 +102,8 @@ func getMerStaff() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	var merc modes2.Merchant
-	var mer modes2.StaffList
+	var merc modes.Merchant
+	var mer modes.StaffList
 	merc.MerchantId = "dpfa6cf8d45c8bef6e0c734bb02a635f"
 	err = client.Call("Merchant.GetStaff", &merc, &mer)
 	if err != nil {
@@ -121,8 +121,8 @@ func getMerStaffNotAuth() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	var merc modes2.Merchant
-	var mer modes2.StaffList
+	var merc modes.Merchant
+	var mer modes.StaffList
 	merc.MerchantId = "33"
 	err = client.Call("Merchant.GetStaffNotAuth", &merc, &mer)
 	if err != nil {
@@ -140,8 +140,8 @@ func UpdateTrust() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	var merc = modes2.Merchant{MerchantId: "33", Trust: 100}
-	var mer modes2.Merchant
+	var merc = modes.Merchant{MerchantId: "33", Trust: 100}
+	var mer modes.Merchant
 	err = client.Call("Merchant.UpdateTrust", &merc, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -158,8 +158,8 @@ func UpdateStatus() {
 	}
 	fmt.Println("连接RPC服务成功")
 
-	var merc = modes2.Merchant{MerchantId: "33", Status: 1}
-	var mer modes2.Merchant
+	var merc = modes.Merchant{MerchantId: "33", Status: 1}
+	var mer modes.Merchant
 	err = client.Call("Merchant.UpdateStatus", &merc, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -175,7 +175,7 @@ func getMargin() {
 	}
 	fmt.Println("连接RPC服务成功")
 	var margin = CoordinatesPoint{116.3990880000,39.9096820000, 3, 2}
-	mer := modes2.MerchantList{}
+	mer := modes.MerchantList{}
 	err = client.Call("Merchant.GetNearMerchant", &margin, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
@@ -191,8 +191,8 @@ func getAllBranch() {
 		return
 	}
 	fmt.Println("连接RPC服务成功")
-	var merc modes2.Merchant
-	var list modes2.MerchantList
+	var merc modes.Merchant
+	var list modes.MerchantList
 	merc.MerchantId = "b97c6afce65859df44c3b1b0acc64dd9"
 	err = client.Call("Merchant.GetAllBranch", &merc, &list)
 	if err != nil {

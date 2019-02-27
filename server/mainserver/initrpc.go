@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"public/server/modes"
-
-	//"errors"
+	"card_public/server/modes"
 	"net/rpc"
 )
 

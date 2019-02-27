@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"net/rpc"
-	"public/server/modes"
+	"card_public/server/modes"
 )
 
 import (

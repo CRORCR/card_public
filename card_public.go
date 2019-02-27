@@ -1,11 +1,9 @@
 package main
 
 import (
-	//"time"
-	"public/server/db"
-	"public/server/modes"
-	//"./server/ndb"
-	"public/server/mainserver"
+	"card_public/server/db"
+	"card_public/server/modes"
+	"card_public/server/mainserver"
 	"fmt"
 )
 

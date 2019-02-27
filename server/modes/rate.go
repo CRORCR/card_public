@@ -1,7 +1,7 @@
 package modes
 
 import (
-	"public/server/db"
+	"card_public/server/db"
 )
 
 const YOAWORATE = "yoawo_rate"
