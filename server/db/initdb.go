@@ -18,7 +18,7 @@ func GetDBHand(nIndex int) *xorm.Engine {
 }
 
 func InitDB() error {
-//root:root@tcp(127.0.0.1:3306)/godb
+
 	dblist := lib.ReadDBConfig("./config/db.json")
 	for _, db := range dblist {
 		strConn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", db.DBUser,

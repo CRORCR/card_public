@@ -2,20 +2,20 @@ package modes
 
 import (
 	"card_public/server/db"
-	"time"
 	"fmt"
 	"sort"
+	"time"
 )
 
-const USERFOOT = "USER_FOOT_SET_"	// 此用户消费的区的纪录
+const USERFOOT = "USER_FOOT_SET_" // 此用户消费的区的纪录
 
 type UserFoot struct {
-	UserId	string		// 用 户 ID
+	UserId string // 用 户 ID
 	//AreaId []string	用户所消费的区ID
 }
 
-func ( this *UserFoot )name()string{
-	return fmt.Sprintf("%s%s", USERFOOT, this.UserId )
+func (this *UserFoot) name() string {
+	return fmt.Sprintf("%s%s", USERFOOT, this.UserId)
 }
 
 /*
@@ -24,18 +24,17 @@ func ( this *UserFoot )name()string{
  *	前置条件: 如果 strAreaId 不存在添加
  *
  *************************************************************************************/
-func ( this *UserFoot )isAdd( nAreaNumber int64 )error{
-	return db.GetRedis().SAdd( this.name() ,nAreaNumber ).Err()
+func (this *UserFoot) isAdd(nAreaNumber int64) error {
+	return db.GetRedis().SAdd(this.name(), nAreaNumber).Err()
 }
-
 
 /*
  * desc: 获取用户所有的消费区的ID
  *
  *************************************************************************************/
-func ( this *UserFoot )getAll()( []string, error ){
+func (this *UserFoot) getAll() ([]string, error) {
 	fmt.Println("用户所有的消费区的ID:", this.name())
-	return db.GetRedis().SMembers( this.name() ).Result()
+	return db.GetRedis().SMembers(this.name()).Result()
 }
 
 type TransactionFoot struct {
@@ -70,7 +69,7 @@ func (this TransactionList) Less(i, j int) bool {
 	return this[i].UpdateAt < this[j].UpdateAt
 }
 
-func (this *TransactionFoot)name()(string, int64 ) {
+func (this *TransactionFoot) name() (string, int64) {
 	var val MerchantInfo
 	val.MerchantId = this.MerchantId
 	val.GetAreaNumber()
@@ -83,7 +82,7 @@ func (this *TransactionFoot)name()(string, int64 ) {
  *************************************************************************************/
 func (this *TransactionFoot) Get(inPara, outPara *TransactionFoot) error {
 	strName, _ := inPara.name()
-	_, err := db.GetDBHand(0).Table( strName ).
+	_, err := db.GetDBHand(0).Table(strName).
 		Where("tran_id = ?", inPara.TranId).
 		Get(outPara)
 	return err
@@ -93,18 +92,18 @@ func (this *TransactionFoot) Get(inPara, outPara *TransactionFoot) error {
  * desc: 添加交易
  *
  *************************************************************************************/
-func (this *TransactionFoot)Add(inPara, outPara *TransactionFoot) error {
+func (this *TransactionFoot) Add(inPara, outPara *TransactionFoot) error {
 	strName, nAreaNumber := inPara.name()
 	var err error
 	var user UserFoot
 	user.UserId = inPara.UserId
-	if err = user.isAdd( nAreaNumber ); err != nil {
+	if err = user.isAdd(nAreaNumber); err != nil {
 		return err
 	}
 	var merc MerchantInfo
 	merc.MerchantId = inPara.MerchantId
-	if err = merc.Transaction( inPara.Amount ); err == nil {
-		_, err = db.GetDBHand(0).Table( strName ).Insert(inPara)
+	if err = merc.Transaction(inPara.Amount); err == nil {
+		_, err = db.GetDBHand(0).Table(strName).Insert(inPara)
 	}
 	return err
 }
@@ -120,7 +119,7 @@ type TransactionInfo struct {
  * desc: 获取所有交易记录( 商家 )
  *
  *************************************************************************************/
-func (this *TransactionFoot)MerchantGetAll(inPara *TransactionInfo, outPara *TransactionList )error{
+func (this *TransactionFoot) MerchantGetAll(inPara *TransactionInfo, outPara *TransactionList) error {
 	var val TransactionFoot
 	val.MerchantId = inPara.Id
 	strName, _ := val.name()
@@ -144,24 +143,51 @@ func (this *TransactionFoot) MerchantQuery(inPara *TransactionInfo, outPara *Tra
 		Find(outPara)
 }
 
+/*
+ * desc: 获取所有交易记数量
+ *
+ *************************************************************************************/
+func (this *TransactionFoot) MerchantQueryCount(inPara *TransactionInfo, outPara *int64) error {
+	var val TransactionFoot
+	val.MerchantId = inPara.Id
+	strName, _ := val.name()
+	var total int64
+	total, err := db.GetDBHand(0).Table(strName).Where("merchant_id = ?", inPara.Id).And(inPara.Where).Count()
+	*outPara = total
+	return err
+}
+
+/**
+desc: 获取所有交易总额
+*/
+func (this *TransactionFoot) MerchantQuerySum(inPara *TransactionInfo, outPara *float64) error {
+	var val TransactionFoot
+	val.MerchantId = inPara.Id
+	strName, _ := val.name()
+	var total float64
+	total, err := db.GetDBHand(0).Table(strName).Where("merchant_id = ?", inPara.Id).And(inPara.Where).Sum(new(struct{ Amount float64 }), "amount")
+	*outPara = total
+	return err
+}
+
 type CashierFoot struct {
-        MerchantId	string  // 商家ID、收银员ID
-	CashierId	string  // 收银员ID
-        Count		int     // 单页的数量
-        Page		int     // 页码
+	MerchantId string // 商家ID、收银员ID
+	CashierId  string // 收银员ID
+	Count      int    // 单页的数量
+	Page       int    // 页码
 }
 
 /*
  * desc: 获取指定收银员两天的收款记录
  *
  *************************************************************************************/
-func (this *TransactionFoot)CashierGetList(inPara *CashierFoot, outPara *TransactionList )error{
-        var val TransactionFoot
-        val.MerchantId = inPara.MerchantId
-        strName, _ := val.name()
+func (this *TransactionFoot) CashierGetList(inPara *CashierFoot, outPara *TransactionList) error {
+	var val TransactionFoot
+	val.MerchantId = inPara.MerchantId
+	strName, _ := val.name()
 	nNowTime := time.Now().Unix()
 
-	nNowTime -= ((nNowTime + 28800) % 86400) - 86400
+	nNowTime -= ( ((nNowTime + 28800) % 86400) + 86400 )
 	return db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
 		Where("create_at > ?", nNowTime).
 		Desc("create_at").
@@ -179,7 +205,7 @@ func (this *TransactionFoot) GetUserCash(inPara *CashierFoot, outPara *float64) 
 	strName, _ := val.name()
 	nNowTime := time.Now().Unix()
 	*outPara = -1
-	nNowTime -= ((nNowTime + 28800) % 86400) - 86400
+	nNowTime -= ( ((nNowTime + 28800) % 86400) + 86400 )
 	f, err := db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
 		Where("create_at > ?", nNowTime).
 		Desc("create_at").Sum(new(struct{ Trust float64 }), "amount")
@@ -193,41 +219,37 @@ func (this *TransactionFoot) GetUserCash(inPara *CashierFoot, outPara *float64) 
 	return err
 }
 
-
-
 /*
  * desc: 获取指定收银员两天的收款总和
  *
  *************************************************************************************/
-func (this *TransactionFoot)CashierGetSum(inPara *CashierFoot, outPara *float64 )error{
-        var val TransactionFoot
+func (this *TransactionFoot) CashierGetSum(inPara *CashierFoot, outPara *float64) error {
+	var val TransactionFoot
 	var err error
-        val.MerchantId = inPara.MerchantId
-        strName, _ := val.name()
-        nNowTime := time.Now().Unix()
-        //checkTime -= (checkTime + 28800) % 86400
-        nNowTime -= (( nNowTime + 28800 ) % 86400 ) - 86400
-        *outPara,err = db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?",inPara.MerchantId,inPara.CashierId ).
-                                        Where( "create_at > ?", nNowTime ).
-					Sum( *inPara ,"amount")
-                                        //Limit( inPara.Count, inPara.Page ).
+	val.MerchantId = inPara.MerchantId
+	strName, _ := val.name()
+	nNowTime := time.Now().Unix()
+	//checkTime -= (checkTime + 28800) % 86400
+	nNowTime -= ((nNowTime + 28800) % 86400) - 86400
+	*outPara, err = db.GetDBHand(0).Table(strName).Where("merchant_id = ? AND cashier_id = ?", inPara.MerchantId, inPara.CashierId).
+		Where("create_at > ?", nNowTime).
+		Sum(*inPara, "amount")
+	//Limit( inPara.Count, inPara.Page ).
 	return err
 }
-
-
 
 /*
  * desc: 获取所有交易记录( 用户 )
  *
  *************************************************************************************/
-func (this *TransactionFoot)UserGetAll(inPara *string, outPara *TransactionList )error{
+func (this *TransactionFoot) UserGetAll(inPara *string, outPara *TransactionList) error {
 	var user UserFoot
 	user.UserId = *inPara
 	silAreaNumber, sErr := user.getAll()
 	if nil == sErr {
 		for _, v := range silAreaNumber {
-			strTableName := fmt.Sprintf("car_transaction_%s", v )
-			db.GetDBHand(0).Table( strTableName ).Where("user_id = ?", *inPara).Find( outPara )
+			strTableName := fmt.Sprintf("car_transaction_%s", v)
+			db.GetDBHand(0).Table(strTableName).Where("user_id = ?", *inPara).Find(outPara)
 		}
 	}
 	sort.Sort(outPara)
@@ -235,11 +257,12 @@ func (this *TransactionFoot)UserGetAll(inPara *string, outPara *TransactionList 
 }
 
 type WhereFind struct {
-	UserId string	// 用户ID
-	Where  string	// SQL 的Where 条件
-	Count  int	// 单页的数量
-	Page   int	// 页码
+	UserId string // 用户ID
+	Where  string // SQL 的Where 条件
+	Count  int    // 单页的数量
+	Page   int    // 页码
 }
+
 /*
  * desc: 自定义Where条件,获取所有交易记录( 用户 )
  *
@@ -252,15 +275,14 @@ func (this *TransactionFoot) UserWhereFind(inPara *WhereFind, outPara *Transacti
 		for _, v := range silAreaNumber {
 			strTableName := fmt.Sprintf("car_transaction_%s", v)
 			db.GetDBHand(0).Table(strTableName).
-					Where( inPara.Where ).
-					Limit( inPara.Count, inPara.Page ).
-					Find(outPara)
+				Where(inPara.Where).
+				Limit(inPara.Count, inPara.Page).
+				Find(outPara)
 		}
 	}
 	sort.Sort(outPara)
 	return sErr
 }
-
 
 // =========================================================================================================
 /*
@@ -273,27 +295,25 @@ func (this *TransactionFoot) All(inPara *string, outPara *[]map[string][]byte) e
 
 	var err error
 	strSqlHand := fmt.Sprintf("SELECT a.create_at, a.amount, a.oper_type, a.state, a.target_name, a.buy_id FROM ")
-	strWithdrawal := fmt.Sprintf("SELECT 1 AS oper_type, submission_at AS create_at, wit_id AS buy_id, '云握' AS target_name, state, amount FROM chi_withdrawal_foot WHERE user_id = '%s'", *inPara )
+	strWithdrawal := fmt.Sprintf("SELECT 1 AS oper_type, submission_at AS create_at, wit_id AS buy_id, '云握' AS target_name, state, amount FROM chi_withdrawal_foot WHERE user_id = '%s'", *inPara)
 
 	var user UserFoot
-        user.UserId = *inPara
-        silAreaNumber, _ := user.getAll()
+	user.UserId = *inPara
+	silAreaNumber, _ := user.getAll()
 	var strTransaction string
 	for _, v := range silAreaNumber {
-		strTransaction = fmt.Sprintf("%sSELECT 3 AS oper_type, tran_id AS buy_id, status AS state, merchant_name AS target_name, amount, create_at FROM car_transaction_%.3d WHERE user_id = '%s' UNION ALL ",strTransaction, v, *inPara )
+		strTransaction = fmt.Sprintf("%sSELECT 3 AS oper_type, tran_id AS buy_id, status AS state, merchant_name AS target_name, amount, create_at FROM car_transaction_%.3d WHERE user_id = '%s' UNION ALL ", strTransaction, v, *inPara)
 	}
 
-	strExchange := fmt.Sprintf("SELECT 2 AS oper_type, 0 AS state, trust_count AS amount, '云握' AS target_name, 'null' AS buy_id, create_at FROM chi_exchange_foot WHERE user_id = '%s'", *inPara )
+	strExchange := fmt.Sprintf("SELECT 2 AS oper_type, 0 AS state, trust_count AS amount, '云握' AS target_name, 'null' AS buy_id, create_at FROM chi_exchange_foot WHERE user_id = '%s'", *inPara)
 
-	strSqlEnd  := "AS a ORDER BY create_at DESC;"
+	strSqlEnd := "AS a ORDER BY create_at DESC;"
 
-	strSql := fmt.Sprintf("%s ( %s UNION ALL %s%s ) %s", strSqlHand, strWithdrawal, strTransaction, strExchange , strSqlEnd )
+	strSql := fmt.Sprintf("%s ( %s UNION ALL %s%s ) %s", strSqlHand, strWithdrawal, strTransaction, strExchange, strSqlEnd)
 	fmt.Println("-------------------------------------------------------------------------------------------------")
-	fmt.Println( strSql )
+	fmt.Println(strSql)
 	fmt.Println("-------------------------------------------------------------------------------------------------")
-        *outPara, err = db.GetDBHand(0).Query( strSql )
-	fmt.Println( outPara )
-        return err
+	*outPara, err = db.GetDBHand(0).Query(strSql)
+	fmt.Println(outPara)
+	return err
 }
-
-

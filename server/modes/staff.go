@@ -309,10 +309,8 @@ func (this *Staff)ShowAuthority( inPara *StaffAuthority , outPara *bool ) error 
 		if n == val.Authority & n {
 			*outPara = true
 		}
-        }
-        fmt.Println("权限值",val.Authority)
-        fmt.Println("权限值",val.Authority&2==2)
-        return err
+	}
+	return err
 }
 
 /*

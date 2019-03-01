@@ -180,6 +180,23 @@ func  StaffGetUserId() {
 	fmt.Println("调用结果:", fage)
 }
 
+func  StaffDel() {
+        client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+        if err != nil {
+                fmt.Println("连接RPC服务失败：", err)
+                return
+        }
+        fmt.Println("连接RPC服务成功")
+	var fage modes.Staff
+        fage.UserId = "Shane_share_id" // aaaaaa
+        err = client.Call("Staff.Del", &fage, &fage )
+        if err != nil {
+                fmt.Println("调用失败：", err)
+        }
+        fmt.Println("调用结果：", fage)
+}
+
+
 func TransactionFootAdd(){
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	if err != nil {

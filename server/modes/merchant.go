@@ -1,10 +1,10 @@
 package modes
 
 import (
-	"errors"
-	"fmt"
 	"card_public/lib"
 	"card_public/server/db"
+	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -134,7 +134,7 @@ func (this *MerchantInfo) Add(merchant *Merchant) error {
 	var staff StaffInfo
 	staff.UserId = merchant.UserId
 	if nFage, _ := staff.Exists(); 1 == nFage {
-		return errors.New( "此用户已存在" )
+		return errors.New("此用户已存在")
 	}
 	this.MerchantId = merchant.MerchantId
 	this.UserId = merchant.UserId
@@ -252,6 +252,7 @@ type Merchant struct {
 	Trust       float64 `json:"trust" xorm:"trust"`             //鍩        分
 	Credits     float64 `json:"credits" xorm:"credits"`         //积        分
 	Distance    float64 `json:"distance" xorm:"-"`              //商家与用户的距离
+	//lock sync.Mutex
 }
 
 type MerchantList []Merchant
@@ -372,35 +373,41 @@ func (this *Merchant) GetAllBranch(inPara *Merchant, outPara *MerchantList) erro
 	return errors.New("成员属性 MerchantId 不可以为空")
 }
 
+type MerchantAdd struct{
+	UserPhone string
+	MercInfo  Merchant
+}
 /*
  * desc: 添加商家
  *
  *************************************************************************************/
-func (this *Merchant) Add(inPara, outPara *Merchant) error {
+func (this *Merchant) Add( inPara *MerchantAdd, outPara *int64) error {
 	var val MerchantInfo
-	if era := val.Add(inPara); nil != era {
+	var err error
+	if era := val.Add( &inPara.MercInfo ); nil != era {
 		return era
 	}
-	outPara = inPara
-	outPara.InviteCode = GetInvitecode()
-	if inPara.InviteCode == "" {
+	inPara.MercInfo.InviteCode = GetInvitecode()
+	//outPara.InviteCode = "001122"
+	if inPara.MercInfo.InviteCode == "" {
 		return errors.New("邀请码获取失败")
 	}
-	fmt.Println("费率", outPara.MerchantRate)
-	_, err := db.GetDBHand(0).Table(inPara.name()).Insert(outPara)
+	//fmt.Println("费率", outPara.MerchantRate)
+	//fmt.Println("费率", outPara.UserName)
+	*outPara, err = db.GetDBHand(0).Table(inPara.MercInfo.name()).Insert( inPara.MercInfo )
 	if nil == err {
 		var add AddStaff
 		var staff Staff
-		staff.Name = inPara.UserName          // 员工姓名
-		staff.MerchantId = inPara.MerchantId  // 商 家 ID
-		staff.Phone = inPara.Phone            // 员工手机号
-		staff.UserId = inPara.UserId          // 员 工 ID
-		staff.CreateAt = inPara.CreateAt      // 创建时间
+		staff.Name = inPara.MercInfo.UserName          // 员工姓名
+		staff.MerchantId = inPara.MercInfo.MerchantId  // 商 家 ID
+		staff.Phone = inPara.UserPhone                 // 员工手机号
+		staff.UserId = inPara.MercInfo.UserId          // 员 工 ID
+		staff.CreateAt = inPara.MercInfo.CreateAt      // 创建时间
 		staff.State = 1                       // 状    态
 		staff.NumberFage = 1                  // 身份标识
 		staff.Authority = 9223372036854775807 // 权    限
 		add.PStaff = staff
-		add.AreaNumber = inPara.AreaNumber
+		add.AreaNumber = inPara.MercInfo.AreaNumber
 		fmt.Println("商家入驻管理员信息:", staff)
 		err = staff.Add(&add, &staff)
 	}
@@ -482,8 +489,8 @@ func (this *Merchant) Delete(inPara, outPara *Merchant) error {
 }
 
 type MerchantAddBranch struct {
-	Superior string `json:"superior"`// 上级ID, 总店
-	Lower    string `json:"lower"`// 下级ID, 本店
+	Superior string `json:"superior"` // 上级ID, 总店
+	Lower    string `json:"lower"`    // 下级ID, 本店
 }
 
 /*
@@ -539,10 +546,10 @@ func (this *Merchant) GetStaff(inPara *Merchant, outPara *StaffList) error {
 }
 
 type CoordinatesPoint struct {
-	Longitude float64 `json:"longitude"`//经  度
-	Latitude  float64 `json:"latitude"`//纬  度
-	Page      int     `json:"page"`//页  码
-	OfferSet  int     `json:"offer_set"`//偏移量
+	Longitude float64 `json:"longitude"` //经  度
+	Latitude  float64 `json:"latitude"`  //纬  度
+	Page      int     `json:"page"`      //页  码
+	OfferSet  int     `json:"offer_set"` //偏移量
 }
 
 var redClient *redis.Client
@@ -552,6 +559,10 @@ var result map[string][]string
  *
  *************************************************************************************/
 func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *MerchantList) error {
+	//this.lock.Lock()
+	//defer func() {
+	//	this.lock.Unlock()
+	//}()
 	result = make(map[string][]string, 0)
 	radius, err := findGeoRadius(inPara.Longitude, inPara.Latitude)
 	if err != nil {
@@ -572,13 +583,21 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 	//表名对应所有的shareid取出
 	for i := 0; i < len(radius); i++ {
 		//数组第一个元素是表名   后面是share_id
-		addRadiueSelice(radius[i][0], radius[i][1])
+		//addRadiueSelice(radius[i][0], radius[i][1])
+		if len(radius[i])<2{
+			fmt.Printf("radius:%d %v\n",i,radius[i])
+			continue
+		}
+		if len(result[radius[i][0]]) == 0 {
+			result[radius[i][0]] = make([]string, 0)
+		}
+		result[radius[i][0]] = append(result[radius[i][0]], radius[i][1])
 	}
 
 	//查询mysql 表名对应的所有shareid 集合存储在result中
-	res := make([]Merchant, 0)
+	res := make([]*Merchant, 0)
 	for key, value := range result {
-		m := make([]Merchant, 0)
+		m := make([]*Merchant, 0)
 		name := fmt.Sprintf("car_merchant_%v", key)
 		e := db.GetDBHand(0).Table(name).In("merchant_id", value).Find(&m)
 		fmt.Printf("err:%+v  result:%+v \n", e, m)
@@ -592,7 +611,7 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 		for _, value := range res {
 			if strings.EqualFold(radius[i][1], value.MerchantId) {
 				value.Distance, _ = strconv.ParseFloat(radius[i][2], 64)
-				*outPara = append(*outPara, value)
+				*outPara = append(*outPara, *value)
 				break
 			}
 		}
@@ -619,7 +638,7 @@ const (
 	//  表名  shareId  距离(km)
 	//[[310   123     0.0001] [311 123 2.4993]]
 */
-func findGeoRadius(longitude, latitude float64) (result [][3]string, err error) {
+func findGeoRadius(longitude, latitude float64) ([][3]string, error) {
 	radius := &redis.GeoRadiusQuery{
 		Radius:   Radius,
 		Unit:     "km",
@@ -631,7 +650,7 @@ func findGeoRadius(longitude, latitude float64) (result [][3]string, err error) 
 		fmt.Println("redis距离错误", err)
 		return nil, err
 	}
-	result = make([][3]string, 0)
+	result := make([][3]string, 0)
 	func(loc []redis.GeoLocation) error {
 		for _, value := range loc {
 			var s [3]string
@@ -645,7 +664,7 @@ func findGeoRadius(longitude, latitude float64) (result [][3]string, err error) 
 		}
 		return nil
 	}(locations)
-	return
+	return result, nil
 }
 
 /*
