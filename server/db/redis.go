@@ -35,7 +35,6 @@ func (this *RedisServer) ReadConfigFile(strName string) error {
 }
 
 func (this *RedisServer) Start(strName string) error {
-
 	err := this.ReadConfigFile(strName)
 	if err != nil {
 		return err

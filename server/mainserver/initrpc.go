@@ -35,11 +35,15 @@ func (this *RPCServer) Start() {
 	temp := new(modes.TemplateBanner)
 	rpc.Register(temp)
 
+	banner := new(modes.Banner)
+	rpc.Register(banner)
+
 	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7003")
 	if err != nil {
 		fmt.Println("错误了哦")
 		os.Exit(1)
 	}
+	modes.ReviewBanner()
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	for {
 		//需要自己控制连接，当有客户端连接上来后，我们需要把这个连接交给rpc 来处理

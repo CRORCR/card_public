@@ -14,7 +14,7 @@ import (
  */
 
 func TestAccount(t *testing.T) {
-	findAccount() //查询商家所有员工
+	//findAccount() //查询商家所有员工
 }
 
 //添加商家信息

@@ -36,7 +36,6 @@ var BannerShowList []BannerShow
 //现在只有五个位置,但是图片会有多个
 const (
 	BANNERTEMPLIST = "banner_list" //正在展示的本县广告, 县areaID_展示位
-	BANNERTEMP     = "banner_%v"   //详细广告,BannerSite广告位
 	BANNERTABLE    = "banner"
 )
 
@@ -44,10 +43,10 @@ const (
 // 但是为了后期可能需要判断自己第几次上架,还是多加一步)
 type Banner struct {
 	//按照区域展示
-	ID           string `json:"id" xorm:"id"`
+	ID           int64  `json:"id" xorm:"id"`
 	AreaId       int64  `json:"area_id" xorm:"area_id"`             //县id
 	MerchantID   string `json:"merchant_id" xorm:"merchant_id"`     //商家id
-	DadID        string `json:"dad" xorm:"dad"`                     //表id
+	DadID        int64  `json:"dad" xorm:"dad"`                     //表id
 	BannerSite   string `json:"banner_site" xorm:"banner_site"`     //广告位 (轮播1,轮播2,轮播3,轮播4...)
 	BannerPrice  int64  `json:"banner_price" xorm:"banner_price"`   //广告位价格(100,200,500)    计算出总次数
 	TodayTimes   int64  `json:"today_times" xorm:"today_times"`     //今日点击次数     每日递增
@@ -82,11 +81,9 @@ func (this *Banner) upShow() error {
 	}
 	//2.数据提交到线上  先从线上拿下来,然后进行替换
 	var key = fmt.Sprintf("%v_%v", this.AreaId, this.BannerSite)
-	npids, _ := db.GetRedis().HGetAll(key).Result()
-	if len(npids) == 0 {
-		//db.GetRedis().HSet(key, "count", this.TotalTimes) //当前一共需要点击多少次 第一次等于自己,以后都不能变化
-		db.GetRedis().HSet(key, "unix_time", time.Now().Unix())
-	}
+
+	db.GetRedis().SAdd(BANNERTEMPLIST, key)
+	db.GetRedis().HSet(key, "unix_time", time.Now().Unix())
 	db.GetRedis().HSet(key, "area_id", this.AreaId)
 	db.GetRedis().HSet(key, "site", this.BannerSite)
 	db.GetRedis().HSet(key, "today_times", 0)           //今日点击次数     每日递增
@@ -96,15 +93,20 @@ func (this *Banner) upShow() error {
 	return nil
 }
 
+//查看商家广告
+func (this *Banner) DownShow(input, output *Banner)error {
+	return downShow(input.AreaId, input.BannerSite)
+}
+
 //下架  每次递减,如果变成0,需要再次选出一个广告
-func (this *BannerShow) downShow() error {
-	var key = fmt.Sprintf("%v_%v", this.AreaID, this.Site)
+func downShow(areaId int64, site string) error {
+	var key = fmt.Sprintf("%v_%v", areaId, site)
 	npids, _ := db.GetRedis().HGetAll(key).Result()
 	if len(npids) == 0 {
 		return fmt.Errorf("查看上架广告递减失败")
 	}
 	i, _ := strconv.ParseInt(npids["remains"], 10, 64)
-	if i <= 0 { //当前广告无效,选举下一个广告
+	if i <= 1 { //当前广告无效,选举下一个广告
 		//指定县,指定公告位置,指定公告状态为上架中
 		area, _ := strconv.ParseInt(npids["area_id"], 10, 64)
 		ban := &Banner{BannerSite: npids["site"], AreaId: area, BannerStatus: 2}
@@ -112,16 +114,16 @@ func (this *BannerShow) downShow() error {
 		//修改为已下架
 		ban.BannerStatus = 3
 		ban.ShowEnd = time.Now().Unix() //修改结束时间
-
+		db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", ban.ID).Update(ban)
 		//获取下一个需要展示的数据
 		ba := &Banner{DadID: ban.ID}
 		db.GetDBHand(0).Table(BANNERTABLE).Get(ba)
 		ba.upShow() //提交redis
 	}
-
+	unix_time, _ := strconv.ParseInt(npids["unix_time"], 10, 64)
 	db.GetRedis().HIncrBy(key, "count", -1)
 	//今日时间戳满足,加1,否则置为1,清空今日时间戳
-	if lib.IsToday(this.UnixTime) {
+	if lib.IsToday(unix_time) {
 		db.GetRedis().HIncrBy(key, "today_times", 1)
 	} else {
 		db.GetRedis().HSet(key, "unix_time", time.Now().Unix())
@@ -135,13 +137,16 @@ func (this *BannerShow) downShow() error {
 //************************************************
 //创建一条广告,先存储数据库,更新redis
 func (this *Banner) AddBanner(banner, outPut *Banner) error {
+	var ban = &Banner{BannerSite: banner.BannerSite, AreaId: banner.AreaId}
+	db.GetDBHand(0).Table(BANNERTABLE).Desc("pay_time").Get(ban)
+	banner.DadID = ban.ID
 	_, err := db.GetDBHand(0).Table(BANNERTABLE).Insert(banner)
 	if err != nil {
 		return fmt.Errorf("创建广告失败:err:%v", err)
 	}
 	//更新总数
-	var key = fmt.Sprintf("%v_%v", this.AreaId, this.BannerSite)
-	db.GetRedis().HIncrBy(key, "count", this.TotalTimes)
+	var key = fmt.Sprintf("%v_%v", banner.AreaId, banner.BannerSite)
+	db.GetRedis().HIncrBy(key, "count", banner.TotalTimes)
 	return err
 }
 
