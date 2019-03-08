@@ -88,7 +88,7 @@ func (this *MWithdrawalFoot) Update(inPara *MWithdrawalFoot, outPara *int64) err
 func (this *MWithdrawalFoot)GetNotUse( inPara *MWithdrawalFoot, outPara *float64 )error{
 	var err error
 	*outPara, err = db.GetDBHand(0).Table("car_withdrawal_foot").
-                                Where("merchant_id = ? AND state < ?", inPara.MerchantId, 100 ).
+                                Where("merchant_id = ? AND state < ?", inPara.MerchantId, 3 ).
                                 Sum( new( MWithdrawalFoot ) ,"amount")
 	return err
 }

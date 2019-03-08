@@ -12,7 +12,6 @@ import (
  * @author Ipencil
  * @create 2019/2/18
  */
-
 var rateList []*modes.YoawoRate
 
 

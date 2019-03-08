@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -252,7 +253,7 @@ type Merchant struct {
 	Trust       float64 `json:"trust" xorm:"trust"`             //鍩        分
 	Credits     float64 `json:"credits" xorm:"credits"`         //积        分
 	Distance    float64 `json:"distance" xorm:"-"`              //商家与用户的距离
-	//lock sync.Mutex
+	lock sync.Mutex `json:"-" xorm:"-"`
 }
 
 type MerchantList []Merchant
@@ -374,8 +375,8 @@ func (this *Merchant) GetAllBranch(inPara *Merchant, outPara *MerchantList) erro
 }
 
 type MerchantAdd struct{
-	UserPhone string
-	MercInfo  Merchant
+	UserPhone string 	`json:"user_phone"`
+	MercInfo  Merchant 	`json:"merc_info"`
 }
 /*
  * desc: 添加商家
@@ -553,27 +554,26 @@ type CoordinatesPoint struct {
 }
 
 var redClient *redis.Client
-var result map[string][]string
+var result = make(map[string][]string, 0)
 /*
  * desc: 获取附近商家列表
  *
  *************************************************************************************/
 func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *MerchantList) error {
-	//this.lock.Lock()
-	//defer func() {
-	//	this.lock.Unlock()
-	//}()
+	this.lock.Lock()
+	defer func() {
+		this.lock.Unlock()
+	}()
 	result = make(map[string][]string, 0)
 	radius, err := findGeoRadius(inPara.Longitude, inPara.Latitude)
 	if err != nil {
 		return err
 	}
 
-	//radius = radius[(inPara.Page-1)*inPara.OfferSet : (inPara.Page-1)*inPara.OfferSet+inPara.OfferSet] //分页处理
 	start := (inPara.Page - 1) * inPara.OfferSet
 	end := (inPara.Page-1)*inPara.OfferSet + inPara.OfferSet
 	if start >= len(radius) {
-		return errors.New("result is empty.")
+		return errors.New("result is empty")
 	}
 	if end > len(radius) {
 		end = len(radius)
@@ -581,17 +581,17 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 
 	radius = radius[start: end] //分页处理
 	//表名对应所有的shareid取出
-	for i := 0; i < len(radius); i++ {
+	for _,radiuv:= range radius {
 		//数组第一个元素是表名   后面是share_id
 		//addRadiueSelice(radius[i][0], radius[i][1])
-		if len(radius[i])<2{
-			fmt.Printf("radius:%d %v\n",i,radius[i])
+		if len(radiuv)<2{
+			fmt.Printf("radiuv:%v\n",radiuv)
 			continue
 		}
-		if len(result[radius[i][0]]) == 0 {
-			result[radius[i][0]] = make([]string, 0)
+		if len(result[radiuv[0]]) == 0 {
+			result[radiuv[0]] = make([]string, 0)
 		}
-		result[radius[i][0]] = append(result[radius[i][0]], radius[i][1])
+		result[radiuv[0]] = append(result[radiuv[0]], radiuv[1])
 	}
 
 	//查询mysql 表名对应的所有shareid 集合存储在result中
@@ -600,7 +600,9 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 		m := make([]*Merchant, 0)
 		name := fmt.Sprintf("car_merchant_%v", key)
 		e := db.GetDBHand(0).Table(name).In("merchant_id", value).Find(&m)
-		fmt.Printf("err:%+v  result:%+v \n", e, m)
+		if e!=nil{
+			continue
+		}
 		res = append(res, m...)
 	}
 
@@ -650,7 +652,7 @@ func findGeoRadius(longitude, latitude float64) ([][3]string, error) {
 		fmt.Println("redis距离错误", err)
 		return nil, err
 	}
-	result := make([][3]string, 0)
+	resv := make([][3]string, 0)
 	func(loc []redis.GeoLocation) error {
 		for _, value := range loc {
 			var s [3]string
@@ -660,11 +662,11 @@ func findGeoRadius(longitude, latitude float64) ([][3]string, error) {
 			}
 			s[0], s[1] = str[0], str[1]
 			s[2] = strconv.FormatFloat(value.Dist, 'f', -1, 64)
-			result = append(result, s)
+			resv = append(resv, s)
 		}
 		return nil
 	}(locations)
-	return result, nil
+	return resv, nil
 }
 
 /*

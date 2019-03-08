@@ -1,9 +1,9 @@
 package test
 
 import (
+	"card_public/server/modes"
 	"fmt"
 	"net/rpc"
-	"card_public/server/modes"
 	"testing"
 )
 
@@ -21,12 +21,15 @@ type CoordinatesPoint struct {
 }
 
 func TestMer(t *testing.T) {
-	//addMer() //添加商家信息
+	addMer() //添加商家信息
 	//getMer()  //获得商家信息
 	//getMerStaff() //查询商家所有员工
 	//UpdateTrust() //更新锘豆
 	//UpdateStatus() //更新商家状态 审核 未认证过:0  审核通过:1
-	getMargin()    //获得20公里以内的所有商家
+	//go getMargin()
+	//go getMargin()    //获得20公里以内的所有商家
+	//go getMargin()    //获得20公里以内的所有商家
+	//time.Sleep(time.Second*5)
 	//addBranch()
 	//getAllBranch()
 }
@@ -40,7 +43,7 @@ func addMer() {
 	}
 	fmt.Println("连接RPC服务成功")
 	mer := modes.Merchant{
-		Phone:      "17600381202",
+		Phone:      "17600381203",
 		MerchantId: "bbbb6cf8d45c8bef6e0c734bb02a635f",
 		UserName:   "奇葩1号店",
 		UserId:     "3dfa6cf8d45c8bef6e0c734bb02abbbb",
@@ -48,7 +51,10 @@ func addMer() {
 		Longitude:  116.404,
 		Latitude:   39.915,
 	}
-	err = client.Call("Merchant.Add", &mer, &mer)
+	var info = &modes.MerchantAdd{}
+	info.UserPhone="17600381202"
+	info.MercInfo=mer
+	err = client.Call("Merchant.Add", info, &mer)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
@@ -176,9 +182,15 @@ func getMargin() {
 	fmt.Println("连接RPC服务成功")
 	var margin = CoordinatesPoint{116.3990880000,39.9096820000, 3, 2}
 	mer := modes.MerchantList{}
-	err = client.Call("Merchant.GetNearMerchant", &margin, &mer)
-	if err != nil {
-		fmt.Println("调用失败:", err)
+	//err = client.Call("Merchant.GetNearMerchant", &margin, &mer)
+	//if err != nil {
+	//	fmt.Println("调用失败:", err)
+	//}
+	for i:=0;i<100;i++{
+		err = client.Call("Merchant.GetNearMerchant", &margin, &mer)
+		if err != nil {
+			fmt.Println("调用失败:", err)
+		}
 	}
 	fmt.Printf("调用结果:%+v\n", mer)
 }

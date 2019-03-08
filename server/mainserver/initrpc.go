@@ -1,11 +1,11 @@
 package mainserver
 
 import (
+	"card_public/server/modes"
 	"fmt"
 	"net"
-	"os"
-	"card_public/server/modes"
 	"net/rpc"
+	"os"
 )
 
 type RPCServer struct {
@@ -21,16 +21,19 @@ func (this *RPCServer) Start() {
 	rpc.Register(staff)
 
 	transaction := new(modes.TransactionFoot)
-        rpc.Register(transaction)
+	rpc.Register(transaction)
 
 	rate := new(modes.YoawoRate)
-        rpc.Register(rate)
+	rpc.Register(rate)
 
 	with := new(modes.MWithdrawalFoot)
 	rpc.Register(with)
 
 	withdraw := new(modes.WithdrawalAccount)
 	rpc.Register(withdraw)
+
+	temp := new(modes.TemplateBanner)
+	rpc.Register(temp)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", ":7003")
 	if err != nil {
