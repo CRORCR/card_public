@@ -1,5 +1,9 @@
 package modes
 
+//对于历史数据,只能查询,不能编辑,如果想根据历史数据重新生成,只能拿到历史数据,重新形成一个广告
+//父id  表id    查询广告位,最后按照时间排序,最后一个,作为自己父id(其实可以在上架的时候检查,
+// 但是为了后期可能需要判断自己第几次上架,还是多加一步)
+
 import (
 	"card_public/lib"
 	"card_public/server/db"
@@ -19,7 +23,7 @@ import (
  */
 type BannerShow struct {
 	AreaID     int64 `json:"area_id"`     //县id
-	Site       int64 `json:"site"`        //位置 轮播1,轮播2,轮播3,轮播4,轮播5
+	Site       string `json:"site"`        //位置 轮播1,轮播2,轮播3,轮播4,轮播5
 	Count      int64 `json:"count"`       //当前一共需要点击多少次
 	UnixTime   int64 `json:"-"`           // 时间标志
 	TodayTimes int64 `json:"today_times"` //今日点击次数     每日递增
@@ -33,16 +37,12 @@ var bannerSum = [5]string{"轮播1", "轮播2", "轮播3", "轮播4", "轮播5"}
 
 var BannerShowList []BannerShow
 
-//现在只有五个位置,但是图片会有多个
 const (
 	BANNERTEMPLIST = "banner_list" //正在展示的本县广告, 县areaID_展示位
 	BANNERTABLE    = "banner"
 )
 
-//父id  表id    查询广告位,最后按照时间排序,最后一个,作为自己父id(其实可以在上架的时候检查,
-// 但是为了后期可能需要判断自己第几次上架,还是多加一步)
 type Banner struct {
-	//按照区域展示
 	ID           int64  `json:"id" xorm:"id"`
 	AreaId       int64  `json:"area_id" xorm:"area_id"`             //县id
 	MerchantID   string `json:"merchant_id" xorm:"merchant_id"`     //商家id
@@ -66,13 +66,8 @@ type Banner struct {
 	ShowEnds     string `json:"show_end" xorm:"-"`                  //结束时间
 }
 
-//对于历史数据,只能查询,不能编辑,如果想根据历史数据重新生成,只能拿到历史数据,重新形成一个广告
-
-//************************************************
-
-//任务列表提取设置成已上架
+/*任务列表提取设置成已上架 -- 广告展示*/
 func (this *Banner) upShow() error {
-	//1.修改状态
 	this.ShowTime = time.Now().Unix()
 	this.BannerStatus = 2
 	_, err := db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", this.ID).Update(this)
@@ -93,8 +88,8 @@ func (this *Banner) upShow() error {
 	return nil
 }
 
-//查看商家广告
-func (this *Banner) DownShow(input, output *Banner)error {
+/*查看商家广告*/
+func (this *Banner) DownShow(input, output *Banner) error {
 	return downShow(input.AreaId, input.BannerSite)
 }
 
@@ -106,20 +101,6 @@ func downShow(areaId int64, site string) error {
 		return fmt.Errorf("查看上架广告递减失败")
 	}
 	i, _ := strconv.ParseInt(npids["remains"], 10, 64)
-	if i <= 1 { //当前广告无效,选举下一个广告
-		//指定县,指定公告位置,指定公告状态为上架中
-		area, _ := strconv.ParseInt(npids["area_id"], 10, 64)
-		ban := &Banner{BannerSite: npids["site"], AreaId: area, BannerStatus: 2}
-		db.GetDBHand(0).Table(BANNERTABLE).Get(ban)
-		//修改为已下架
-		ban.BannerStatus = 3
-		ban.ShowEnd = time.Now().Unix() //修改结束时间
-		db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", ban.ID).Update(ban)
-		//获取下一个需要展示的数据
-		ba := &Banner{DadID: ban.ID}
-		db.GetDBHand(0).Table(BANNERTABLE).Get(ba)
-		ba.upShow() //提交redis
-	}
 	unix_time, _ := strconv.ParseInt(npids["unix_time"], 10, 64)
 	db.GetRedis().HIncrBy(key, "count", -1)
 	//今日时间戳满足,加1,否则置为1,清空今日时间戳
@@ -131,6 +112,27 @@ func downShow(areaId int64, site string) error {
 	}
 	db.GetRedis().HIncrBy(key, "tick_outs", 1)
 	db.GetRedis().HIncrBy(key, "remains", -1)
+	if i <= 1 { //当前广告无效,选举下一个广告
+		//指定县,指定公告位置,指定公告状态为上架中
+		area, _ := strconv.ParseInt(npids["area_id"], 10, 64)
+		ban := &Banner{BannerSite: npids["site"], AreaId: area, BannerStatus: 2}
+		db.GetDBHand(0).Table(BANNERTABLE).Get(ban)
+		//修改为已下架
+		ban.BannerStatus = 3
+		ban.ShowEnd = time.Now().Unix() //修改结束时间
+		//下架之后,更新mysql 次数信息
+		ban.TodayTimes, _ = strconv.ParseInt(npids["today_times"], 10, 64) //今日点击次数     每日递增
+		ban.TodayTimes+=1
+		ban.TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64)     //累计点击次数     每次递增
+		ban.TickOuts+=1
+		ban.Remains, _ = strconv.ParseInt(npids["remains"], 10, 64)        //剩余点击次数     总-累计   次数(原子)
+		ban.Remains-=1
+		db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", ban.ID).Update(ban)
+		//获取下一个需要展示的数据
+		ba := &Banner{DadID: ban.ID}
+		db.GetDBHand(0).Table(BANNERTABLE).Get(ba)
+		ba.upShow() //提交redis
+	}
 	return nil
 }
 
@@ -167,84 +169,95 @@ type ResultBanner struct {
  * @author : Ipencil
  * @date   : 2019/3/8
  */
-func (this *Banner) FindBanner(where *Where, outPut *ResultBanner) {
+//查询本店所有广告,待上架,上架中,已下架 也走这个查询
+func (this *Banner) FindBanner(where *Where, outPut *ResultBanner)error {
 	ban := make([]*Banner, 0)
 	s := new(Banner)
 	db.GetDBHand(0).Table(BANNERTABLE).Where(where.SQL).Limit(where.Sum, where.OffSet).Desc("pay_time").Iterate(s, func(idx int, bean interface{}) error {
 		value := bean.(*Banner)
 		value.PayTimes = lib.TimeToString(value.PayTime)
-		value.ShowTimes = lib.TimeToString(value.ShowTime)
-		value.ShowEnds = lib.TimeToString(value.ShowEnd)
+		if value.ShowTime!=0{
+			value.ShowTimes = lib.TimeToString(value.ShowTime)
+		}
+		if value.ShowEnd!=0{
+			value.ShowEnds = lib.TimeToString(value.ShowEnd)
+		}
 		ban = append(ban, value)
 		return nil
 	})
-	total, err := db.GetDBHand(0).Table(BANNERTABLE).Where(where.SQL).Limit(where.Sum, where.OffSet).Count(s)
+	total, err := db.GetDBHand(0).Table(BANNERTABLE).Where(where.SQL).Count(s)
 	outPut.Error = err
 	outPut.Total = total
-	outPut.BannerResultList = ban
-	return
-}
-
-/*更新商家状态*/
-func (this *Banner) UpdateBanner(input, outPut *Banner) error {
-	if input.BannerStatus > 3 {
-		return fmt.Errorf("已下架数据不得编辑")
-	}
-	_, err := db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", input.ID).Update(input)
-	return err
-}
-
-/*查询本店 正在展示的本县指定广告位,查询次数*/
-func (this *Banner) GetBannerShow(input *Banner, outPut *Banner) error {
-	_, err := db.GetDBHand(0).Table(BANNERTABLE).Get(outPut)
-	if err != nil {
-		return err
-	}
-	//非上架中,不查询
-	if outPut.BannerStatus != 2 {
-		QueryBannerShowInfo(outPut.AreaId, outPut.BannerSite)
-	}
-	outPut.PayTimes = lib.TimeToString(outPut.PayTime)
-	outPut.ShowTimes = lib.TimeToString(outPut.ShowTime)
-	outPut.ShowEnds = lib.TimeToString(outPut.ShowEnd)
+	fmt.Println("total",total)
+	outPut.BannerResultList = rec(ban)
 	return nil
 }
 
-/**
- * @desc   : 查询指定县,所有广告
- * @author : Ipencil
- * @date   : 2019/3/8
- */
-func QueryAreaBannerShow(areaID int64) (bannerList []*BannerShow) {
-	bannerList = make([]*BannerShow, 0)
-	for _, value := range bannerSum {
-		bannerList = append(bannerList, QueryBannerShowInfo(areaID, value))
+func rec(ban []*Banner) []*Banner {
+	for i := 0; i < len(ban); i++ {
+		switch ban[i].BannerStatus {
+		case 2: //上架中 去redis查看
+			var key = fmt.Sprintf("%v_%v", ban[i].AreaId, ban[i].BannerSite)
+			npids, _ := db.GetRedis().HGetAll(key).Result()
+			ban[i].TodayTimes, _ = strconv.ParseInt(npids["today_times"], 10, 64) //今日点击次数     每日递增
+			ban[i].TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64)     //累计点击次数     每次递增
+			ban[i].Remains, _ = strconv.ParseInt(npids["remains"], 10, 64)        //剩余点击次数     总-累计   次数(原子)
+		case 3: //状态为3 查询mysql,需要检查今日时间
+			if !lib.IsToday(ban[i].ShowEnd) {
+				ban[i].TodayTimes = 0
+			}
+		default:
+			continue
+		}
 	}
-	return
+	return ban
 }
 
-/**
- * @desc   : 查询指定县 指定广告
+/*更新广告*/
+func (this *Banner) UpdateBanner(input, outPut *Banner) error {
+	i, err := db.GetDBHand(0).Table(BANNERTABLE).Where("banner_status<3 and id=?", input.ID).Update(input)
+	if err!=nil{
+		return err
+	}
+	if i==0{
+		return fmt.Errorf("更新失败,不得更新历史订单")
+	}
+	return nil
+}
+
+/** todo test
+ * @desc   : 查询指定县 指定广告  县必须指定,广告位可以随意
  * @author : Ipencil
  * @date   : 2019/3/8
  */
-func QueryBannerShowInfo(areaID int64, bannerSite string) *BannerShow {
-	var show = &BannerShow{}
-	var key = fmt.Sprintf("%v_%v", areaID, bannerSite)
-	if isMember, _ := db.GetRedis().SIsMember(BANNERTEMPLIST, key).Result(); isMember {
-		fmt.Println("广告存在记录查询参数")
-		npids, _ := db.GetRedis().HGetAll(key).Result()
-		if len(npids) == 0 {
-			return nil
+func (this *Banner) QueryBannerShowInfo(banner *BannerShow, bannerSite *[]BannerShow)error{
+	if banner.AreaID==0{
+		return fmt.Errorf("区域必须指定")
+	}
+	var siteList = make([]string, 0)
+	if len(banner.Site) == 0 {
+		var list []string
+		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?",banner.AreaID).GroupBy("banner_site").Find(&list)
+		siteList = append(siteList, list...)
+	} else {
+		siteList = append(siteList, banner.Site)
+	}
+	fmt.Println("集合都是啥",siteList)
+	for _, value := range siteList {
+		var key = fmt.Sprintf("%v_%v", banner.AreaID, value)
+		if isMember, _ := db.GetRedis().SIsMember(BANNERTEMPLIST, key).Result(); isMember {
+			fmt.Println("广告存在记录查询参数")
+			npids, _ := db.GetRedis().HGetAll(key).Result()
+			var ban = BannerShow{}
+			ban.AreaID, _ = strconv.ParseInt(npids["area_id"], 10, 64)
+			ban.Site = npids["site"]
+			ban.Count, _ = strconv.ParseInt(npids["count"], 10, 64)
+			ban.TodayTimes, _ = strconv.ParseInt(npids["today_times"], 10, 64)
+			ban.TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64)
+			ban.Remains, _ = strconv.ParseInt(npids["remains"], 10, 64)
+			ban.TotalTimes, _ = strconv.ParseInt(npids["total_times"], 10, 64)
+			*bannerSite = append(*bannerSite, ban)
 		}
-		show.AreaID, _ = strconv.ParseInt(npids["area_id"], 10, 64)
-		show.Site, _ = strconv.ParseInt(npids["site"], 10, 64)
-		show.Count, _ = strconv.ParseInt(npids["count"], 10, 64)
-		show.TodayTimes, _ = strconv.ParseInt(npids["today_times"], 10, 64)
-		show.TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64)
-		show.Remains, _ = strconv.ParseInt(npids["remains"], 10, 64)
-		show.TotalTimes, _ = strconv.ParseInt(npids["total_times"], 10, 64)
-		return show
 	}
 	return nil
 }

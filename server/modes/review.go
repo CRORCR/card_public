@@ -31,15 +31,20 @@ func reviewRate() {
 }
 
 func review() {
-	var areaList []int64
-	db.GetDBHand(0).Table(BANNERTABLE).Cols("area_id").GroupBy("area_id").Find(&areaList)
 	var result = make(chan *Banner, 1)
 	var clost = make(chan struct{})
+	defer func(){
+		close(clost)
+		close(result)
+	}()
+	var areaList []int64
+	fmt.Println("区域",areaList)
+	db.GetDBHand(0).Table(BANNERTABLE).Cols("area_id").GroupBy("area_id").Find(&areaList)
 	go upload(result, clost)
 	//县
 	for _, areaId := range areaList {
 		var siteList []string
-		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").GroupBy("banner_site").Find(&siteList)
+		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?",areaId).GroupBy("banner_site").Find(&siteList)
 		//广告位
 		for _, site := range siteList {
 			ban := &Banner{AreaId: areaId, BannerSite: site, BannerStatus: 2}
@@ -50,6 +55,7 @@ func review() {
 			ban.BannerStatus = 1
 			b, _ = db.GetDBHand(0).Table(BANNERTABLE).Asc("pay_time").Get(ban)
 			if b {
+				fmt.Println("一个任务")
 				result <- ban
 			}
 		}
