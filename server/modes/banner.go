@@ -22,14 +22,14 @@ import (
  * @create 2019/3/7
  */
 type BannerShow struct {
-	AreaID     int64 `json:"area_id"`     //县id
+	AreaID     int64  `json:"area_id"`     //县id
 	Site       string `json:"site"`        //位置 轮播1,轮播2,轮播3,轮播4,轮播5
-	Count      int64 `json:"count"`       //当前一共需要点击多少次
-	UnixTime   int64 `json:"-"`           // 时间标志
-	TodayTimes int64 `json:"today_times"` //今日点击次数     每日递增
-	TickOuts   int64 `json:"tick_outs"`   //累计点击次数     每次递增
-	Remains    int64 `json:"remains"`     //剩余点击次数     总-累计   次数(原子)
-	TotalTimes int64 `json:"total_times"` //总共点击次数    通过广告位+价格
+	Count      int64  `json:"count"`       //当前一共需要点击多少次
+	UnixTime   int64  `json:"-"`           // 时间标志
+	TodayTimes int64  `json:"today_times"` //今日点击次数     每日递增
+	TickOuts   int64  `json:"tick_outs"`   //累计点击次数     每次递增
+	Remains    int64  `json:"remains"`     //剩余点击次数     总-累计   次数(原子)
+	TotalTimes int64  `json:"total_times"` //总共点击次数    通过广告位+价格
 }
 
 //多少广告 目前是5个
@@ -49,6 +49,7 @@ type Banner struct {
 	DadID        int64  `json:"dad" xorm:"dad"`                     //表id
 	BannerSite   string `json:"banner_site" xorm:"banner_site"`     //广告位 (轮播1,轮播2,轮播3,轮播4...)
 	BannerPrice  int64  `json:"banner_price" xorm:"banner_price"`   //广告位价格(100,200,500)    计算出总次数
+	PayStatus    int64  `json:"pay_status" xorm:"pay_status"`       //支付方式 1:支付宝\默认 2:诺 3:其他
 	TodayTimes   int64  `json:"today_times" xorm:"today_times"`     //今日点击次数     每日递增
 	TickOuts     int64  `json:"tick_outs" xorm:"tick_outs"`         //累计点击次数     每次递增
 	Remains      int64  `json:"remains" xorm:"remains"`             //剩余点击次数     总-累计   次数(原子)
@@ -122,11 +123,11 @@ func downShow(areaId int64, site string) error {
 		ban.ShowEnd = time.Now().Unix() //修改结束时间
 		//下架之后,更新mysql 次数信息
 		ban.TodayTimes, _ = strconv.ParseInt(npids["today_times"], 10, 64) //今日点击次数     每日递增
-		ban.TodayTimes+=1
-		ban.TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64)     //累计点击次数     每次递增
-		ban.TickOuts+=1
-		ban.Remains, _ = strconv.ParseInt(npids["remains"], 10, 64)        //剩余点击次数     总-累计   次数(原子)
-		ban.Remains-=1
+		ban.TodayTimes += 1
+		ban.TickOuts, _ = strconv.ParseInt(npids["tick_outs"], 10, 64) //累计点击次数     每次递增
+		ban.TickOuts += 1
+		ban.Remains, _ = strconv.ParseInt(npids["remains"], 10, 64) //剩余点击次数     总-累计   次数(原子)
+		ban.Remains -= 1
 		db.GetDBHand(0).Table(BANNERTABLE).Where("id=?", ban.ID).Update(ban)
 		//获取下一个需要展示的数据
 		ba := &Banner{DadID: ban.ID}
@@ -170,16 +171,16 @@ type ResultBanner struct {
  * @date   : 2019/3/8
  */
 //查询本店所有广告,待上架,上架中,已下架 也走这个查询
-func (this *Banner) FindBanner(where *Where, outPut *ResultBanner)error {
+func (this *Banner) FindBanner(where *Where, outPut *ResultBanner) error {
 	ban := make([]*Banner, 0)
 	s := new(Banner)
 	db.GetDBHand(0).Table(BANNERTABLE).Where(where.SQL).Limit(where.Sum, where.OffSet).Desc("pay_time").Iterate(s, func(idx int, bean interface{}) error {
 		value := bean.(*Banner)
 		value.PayTimes = lib.TimeToString(value.PayTime)
-		if value.ShowTime!=0{
+		if value.ShowTime != 0 {
 			value.ShowTimes = lib.TimeToString(value.ShowTime)
 		}
-		if value.ShowEnd!=0{
+		if value.ShowEnd != 0 {
 			value.ShowEnds = lib.TimeToString(value.ShowEnd)
 		}
 		ban = append(ban, value)
@@ -188,7 +189,7 @@ func (this *Banner) FindBanner(where *Where, outPut *ResultBanner)error {
 	total, err := db.GetDBHand(0).Table(BANNERTABLE).Where(where.SQL).Count(s)
 	outPut.Error = err
 	outPut.Total = total
-	fmt.Println("total",total)
+	fmt.Println("total", total)
 	outPut.BannerResultList = rec(ban)
 	return nil
 }
@@ -216,10 +217,10 @@ func rec(ban []*Banner) []*Banner {
 /*更新广告*/
 func (this *Banner) UpdateBanner(input, outPut *Banner) error {
 	i, err := db.GetDBHand(0).Table(BANNERTABLE).Where("banner_status<3 and id=?", input.ID).Update(input)
-	if err!=nil{
+	if err != nil {
 		return err
 	}
-	if i==0{
+	if i == 0 {
 		return fmt.Errorf("更新失败,不得更新历史订单")
 	}
 	return nil
@@ -230,19 +231,19 @@ func (this *Banner) UpdateBanner(input, outPut *Banner) error {
  * @author : Ipencil
  * @date   : 2019/3/8
  */
-func (this *Banner) QueryBannerShowInfo(banner *BannerShow, bannerSite *[]BannerShow)error{
-	if banner.AreaID==0{
+func (this *Banner) QueryBannerShowInfo(banner *BannerShow, bannerSite *[]BannerShow) error {
+	if banner.AreaID == 0 {
 		return fmt.Errorf("区域必须指定")
 	}
 	var siteList = make([]string, 0)
 	if len(banner.Site) == 0 {
 		var list []string
-		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?",banner.AreaID).GroupBy("banner_site").Find(&list)
+		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?", banner.AreaID).GroupBy("banner_site").Find(&list)
 		siteList = append(siteList, list...)
 	} else {
 		siteList = append(siteList, banner.Site)
 	}
-	fmt.Println("集合都是啥",siteList)
+	fmt.Println("集合都是啥", siteList)
 	for _, value := range siteList {
 		var key = fmt.Sprintf("%v_%v", banner.AreaID, value)
 		if isMember, _ := db.GetRedis().SIsMember(BANNERTEMPLIST, key).Result(); isMember {
