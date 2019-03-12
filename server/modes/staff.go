@@ -156,7 +156,7 @@ type Staff struct {
 	NumberId   string `json:"number_id" xorm:"number_id"`     // 身份证号
 	Sex        int    `json:"sex" xorm:"sex"`                 // 性    别
 	CreateAt   int64  `json:"-" xorm:"create_at"`             // 创建时间
-	State      int64  `json:"state" xorm:"state"`             // 状    态
+	State      int64  `json:"state" xorm:"state"`             // 状    态  /v.state 0 未审核  1 :审核通过。 2 拒绝
 	NumberFage int64  `json:"number_fage" xorm:"number_fage"` // 身份标识
 	Authority  uint64 `json:"authority" xorm:"authority"`     // 权    限
 	CreateStr  string `json:"create_at" xorm:"-"`             // 更新时间供前端展示

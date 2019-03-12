@@ -65,7 +65,6 @@ func downLoad(t *testing.T) {
 	fmt.Printf("调用结果:%+v\n", temp)
 }
 
-
 /*根据条件查询历史记录*/
 func findBanner(t *testing.T) {
 	t.SkipNow()
@@ -130,8 +129,6 @@ func QueryBannerShowInfo(t *testing.T) {
 		fmt.Printf("%+v\n",value)
 	}
 }
-
-
 
 /*模板获取*/
 func tempGet(t *testing.T){

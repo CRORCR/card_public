@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -226,7 +227,7 @@ func (this *Banner) UpdateBanner(input, outPut *Banner) error {
 	return nil
 }
 
-/** todo test
+/**
  * @desc   : 查询指定县 指定广告  县必须指定,广告位可以随意
  * @author : Ipencil
  * @date   : 2019/3/8
@@ -280,16 +281,17 @@ type TempPrice struct {
 }
 
 type Temp struct {
-	Url   string `json:"url"` //图片地址
-	Temps []TemplateBanner
+	AreaID string `json:"area_id"`
+	Url    string `json:"url"` //图片地址
+	Temps  []TemplateBanner
 }
 
-var Template Temp
+var Template []Temp
 
 var fileName = "./config/banner_temp.json"
 
 func tempInit(strFileName string) error {
-	Template = Temp{Temps: make([]TemplateBanner, 0)}
+	Template = make([]Temp, 0)
 	jsonFile, err := os.Open(strFileName)
 	if err != nil {
 		panic("打开文件错误，请查看:" + strFileName)
@@ -304,7 +306,7 @@ func tempInit(strFileName string) error {
 	return era
 }
 
-func (this *TemplateBanner) Get(temp2, temp *Temp) error {
+func (this *TemplateBanner) Get(temp2, temp *[]Temp) error {
 	err := tempInit(fileName)
 	if err != nil {
 		return err
@@ -316,13 +318,17 @@ func (this *TemplateBanner) Get(temp2, temp *Temp) error {
 func (this *TemplateBanner) Set(tb, tb2 *Temp) error {
 	this.lock.Lock()
 	defer func() { this.lock.Unlock() }()
-	if len(Template.Temps) == 0 {
+	if len(Template) == 0 {
 		err := tempInit(fileName)
 		if err != nil {
 			return err
 		}
 	}
-	Template = *tb
+	for i := 0; i < len(Template); i++ {
+		if strings.EqualFold(Template[i].AreaID, tb.AreaID) {
+			Template[i] = *tb
+		}
+	}
 	buff, err := json.MarshalIndent(Template, "", " ")
 	if err != nil {
 		return err

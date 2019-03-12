@@ -1,31 +1,34 @@
-{
- "url": "https://192.17",
- "Temps": [
-  {
-   "name": "轮播图1",
-   "pri": [
-    {
-     "price": 20,
-     "count": 20
-    },
-    {
-     "price": 100,
-     "count": 11
-    }
-   ]
-  },
-  {
-   "name": "轮播图2",
-   "pri": [
-    {
-     "price": 20,
-     "count": 20
-    },
-    {
-     "price": 100,
-     "count": 11
-    }
-   ]
-  }
- ]
-}
+[
+ {
+  "area_id":"11111",
+  "url": "https://192.17,https://192.17,https://192.17",
+  "Temps": [
+   {
+    "name": "轮播图1",
+    "pri": [
+     {
+      "price": 20,
+      "count": 20
+     },
+     {
+      "price": 100,
+      "count": 11
+     }
+    ]
+   },
+   {
+    "name": "轮播图2",
+    "pri": [
+     {
+      "price": 20,
+      "count": 20
+     },
+     {
+      "price": 100,
+      "count": 11
+     }
+    ]
+   }
+  ]
+ }
+]
