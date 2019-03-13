@@ -48,7 +48,7 @@ func addBanner(t *testing.T) {
 
 /*阅览广告*/
 func downLoad(t *testing.T) {
-	t.SkipNow()
+	//t.SkipNow()
 	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
 	defer func() { client.Close() }()
 	if err != nil {
@@ -56,8 +56,8 @@ func downLoad(t *testing.T) {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	temp := modes.Banner{}
-	temp.AreaId = 111
-	temp.BannerSite = "轮播图1"
+	temp.AreaId = 130322
+	temp.BannerSite = "轮播1"
 	err = client.Call("Banner.DownShow", &temp, &temp)
 	if err != nil {
 		fmt.Println("调用失败:", err)

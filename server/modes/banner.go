@@ -44,28 +44,30 @@ const (
 )
 
 type Banner struct {
-	ID           int64  `json:"id" xorm:"id"`
-	AreaId       int64  `json:"area_id" xorm:"area_id"`             //县id
-	MerchantID   string `json:"merchant_id" xorm:"merchant_id"`     //商家id
-	DadID        int64  `json:"dad" xorm:"dad"`                     //表id
-	BannerSite   string `json:"banner_site" xorm:"banner_site"`     //广告位 (轮播1,轮播2,轮播3,轮播4...)
-	BannerPrice  int64  `json:"banner_price" xorm:"banner_price"`   //广告位价格(100,200,500)    计算出总次数
-	PayStatus    int64  `json:"pay_status" xorm:"pay_status"`       //支付方式 1:支付宝\默认 2:诺 3:其他
-	TodayTimes   int64  `json:"today_times" xorm:"today_times"`     //今日点击次数     每日递增
-	TickOuts     int64  `json:"tick_outs" xorm:"tick_outs"`         //累计点击次数     每次递增
-	Remains      int64  `json:"remains" xorm:"remains"`             //剩余点击次数     总-累计   次数(原子)
-	TotalTimes   int64  `json:"total_times" xorm:"total_times"`     //总共点击次数    通过广告位+价格
-	PayTime      int64  `json:"pay_time" xorm:"pay_time"`           //付款时间
-	PayTimes     string `json:"pay_times" xorm:"-"`                 //付款时间
-	ShowTime     int64  `json:"-" xorm:"show_time"`                 //上架时间
-	ShowTimes    string `json:"show_time" xorm:"-"`                 //上架时间 string
-	BannerStatus int64  `json:"banner_status" xorm:"banner_status"` //状态  1:等待中 2:上架中 3:已下架 4:删除
-	BannerUrl    string `json:"banner_url" xorm:"banner_url"`       //图片 地址
-	Title        string `json:"title" xorm:"title"`                 //标题
-	TitleSec     string `json:"title_sec" xorm:"title_sec"`         //副标题
-	Content      string `json:"content" xorm:"content"`             //内容
-	ShowEnd      int64  `json:"-" xorm:"show_end"`                  //结束时间
-	ShowEnds     string `json:"show_end" xorm:"-"`                  //结束时间
+	ID            int64  `json:"id" xorm:"id"`
+	PayId         string `json:"pay_id" xorm:"pay_id"`                   //订单id
+	AreaId        int64  `json:"area_id" xorm:"area_id"`                 //县id
+	PayMerchantID string `json:"pay_merchant_id" xorm:"pay_merchant_id"` //购买商家id
+	MerchantID    string `json:"merchant_id" xorm:"merchant_id"`         //广告商家id
+	DadID         int64  `json:"dad" xorm:"dad"`                         //表id
+	BannerSite    string `json:"banner_site" xorm:"banner_site"`         //广告位 (轮播1,轮播2,轮播3,轮播4...)
+	BannerPrice   int64  `json:"banner_price" xorm:"banner_price"`       //广告位价格(100,200,500)    计算出总次数
+	PayStatus     int64  `json:"pay_status" xorm:"pay_status"`           //支付方式 1:支付宝\默认 2:诺 3:其他
+	TodayTimes    int64  `json:"today_times" xorm:"today_times"`         //今日点击次数     每日递增
+	TickOuts      int64  `json:"tick_outs" xorm:"tick_outs"`             //累计点击次数     每次递增
+	Remains       int64  `json:"remains" xorm:"remains"`                 //剩余点击次数     总-累计   次数(原子)
+	TotalTimes    int64  `json:"total_times" xorm:"total_times"`         //总共点击次数    通过广告位+价格
+	PayTime       int64  `json:"pay_time" xorm:"pay_time"`               //付款时间
+	PayTimes      string `json:"pay_times" xorm:"-"`                     //付款时间
+	ShowTime      int64  `json:"-" xorm:"show_time"`                     //上架时间
+	ShowTimes     string `json:"show_time" xorm:"-"`                     //上架时间 string
+	BannerStatus  int64  `json:"banner_status" xorm:"banner_status"`     //状态  1:等待中 2:上架中 3:已下架 4:删除
+	BannerUrl     string `json:"banner_url" xorm:"banner_url"`           //图片 地址
+	Title         string `json:"title" xorm:"title"`                     //标题
+	TitleSec      string `json:"title_sec" xorm:"title_sec"`             //副标题
+	Content       string `json:"content" xorm:"content"`                 //内容
+	ShowEnd       int64  `json:"-" xorm:"show_end"`                      //结束时间
+	ShowEnds      string `json:"show_end" xorm:"-"`                      //结束时间
 }
 
 /*任务列表提取设置成已上架 -- 广告展示*/
@@ -133,6 +135,10 @@ func downShow(areaId int64, site string) error {
 		//获取下一个需要展示的数据
 		ba := &Banner{DadID: ban.ID}
 		db.GetDBHand(0).Table(BANNERTABLE).Get(ba)
+		//没有下一个了
+		if len(ba.MerchantID)==0{
+			db.GetRedis().Expire(key, 1*time.Second)
+		}
 		ba.upShow() //提交redis
 	}
 	return nil
@@ -161,9 +167,9 @@ type Where struct {
 }
 
 type ResultBanner struct {
-	BannerResultList []*Banner
-	Total            int64
-	Error            error
+	BannerResultList []*Banner `json:"banner_result_list"`
+	Total            int64     `json:"total"`
+	Error            error     `json:"error"`
 }
 
 /**
@@ -281,9 +287,9 @@ type TempPrice struct {
 }
 
 type Temp struct {
-	AreaID string `json:"area_id"`
-	Url    string `json:"url"` //图片地址
-	Temps  []TemplateBanner
+	AreaID string           `json:"area_id"`
+	Url    string           `json:"url"` //图片地址
+	Temps  []TemplateBanner `json:"temps"`
 }
 
 var Template []Temp
@@ -306,12 +312,17 @@ func tempInit(strFileName string) error {
 	return era
 }
 
-func (this *TemplateBanner) Get(temp2, temp *[]Temp) error {
+func (this *TemplateBanner) Get(temp2, temp *Temp) error {
 	err := tempInit(fileName)
 	if err != nil {
 		return err
 	}
-	*temp = Template
+	for _, value := range Template {
+		if strings.EqualFold(value.AreaID, temp2.AreaID) {
+			*temp = value
+			return nil
+		}
+	}
 	return nil
 }
 
