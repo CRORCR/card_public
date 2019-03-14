@@ -201,6 +201,24 @@ func (this *Banner) FindBanner(where *Where, outPut *ResultBanner) error {
 	return nil
 }
 
+//状态  1:等待中 2:上架中 3:已下架 4:删除
+func (this *Banner) GetShowCount(where *string, outPut *[]int64) error {
+	var ban [3]int64
+	var err error
+	s := new(Banner)
+	if *where==""{
+		ban[0], err = db.GetDBHand(0).Table(BANNERTABLE).Where("banner_status=1").Count(s)
+		ban[1], err = db.GetDBHand(0).Table(BANNERTABLE).Where("banner_status=2").Count(s)
+		ban[2], err = db.GetDBHand(0).Table(BANNERTABLE).Where("banner_status=3").Count(s)
+	}else{
+		ban[0], err = db.GetDBHand(0).Table(BANNERTABLE).Where(fmt.Sprintf("%v and banner_status=1",*where)).Count(s)
+		ban[1], err = db.GetDBHand(0).Table(BANNERTABLE).Where(fmt.Sprintf("%v and banner_status=2",*where)).Count(s)
+		ban[2], err = db.GetDBHand(0).Table(BANNERTABLE).Where(fmt.Sprintf("%v and banner_status=3",*where)).Count(s)
+	}
+	*outPut=ban[:]
+	return err
+}
+
 func rec(ban []*Banner) []*Banner {
 	for i := 0; i < len(ban); i++ {
 		switch ban[i].BannerStatus {
@@ -326,6 +344,20 @@ func (this *TemplateBanner) Get(temp2, temp *Temp) error {
 	return nil
 }
 
+/**
+ * @desc   : 如果没有任何参数,就查询所有
+ * @author : Ipencil
+ * @date   : 2019/3/14
+ */
+func (this *TemplateBanner) FindOut(temp2, temp *[]Temp) error {
+	err := tempInit(fileName)
+	if err != nil {
+		return err
+	}
+	*temp=Template
+	return nil
+}
+
 func (this *TemplateBanner) Set(tb, tb2 *Temp) error {
 	this.lock.Lock()
 	defer func() { this.lock.Unlock() }()
@@ -340,6 +372,10 @@ func (this *TemplateBanner) Set(tb, tb2 *Temp) error {
 			Template[i] = *tb
 		}
 	}
+	if len(tb.Url)==0{
+		return fmt.Errorf("新增广告模板图片不得为空")
+	}
+	Template=append(Template,*tb)
 	buff, err := json.MarshalIndent(Template, "", " ")
 	if err != nil {
 		return err

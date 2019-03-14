@@ -37,7 +37,7 @@ func review() {
 		close(clost)
 		close(result)
 	}()
-	var areaList []int64
+	var areaList []string
 	db.GetDBHand(0).Table(BANNERTABLE).Cols("area_id").GroupBy("area_id").Find(&areaList)
 	go upload(result, clost)
 	//县

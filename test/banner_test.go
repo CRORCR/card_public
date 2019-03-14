@@ -19,8 +19,10 @@ func TestBanner(t *testing.T) {
 	t.Run("findBanner", findBanner)   //查询广告
 	t.Run("updateBanner", updateBanner)   //更新广告数据
 	t.Run("QueryBannerShowInfo", QueryBannerShowInfo)   //查询指定区域,指定广告位
+	t.Run("findCount", findCount)   //根据条件查询所有count
 	//模板测试
-	t.Run("tempGet", tempGet)   //模板获取
+	t.Run("tempGet", tempGet)   //查询指定区域模板
+	t.Run("tempFind", tempFind)   //查询所有模板
 	t.Run("tempSet", tempSet)   //模板设置
 }
 
@@ -34,7 +36,7 @@ func addBanner(t *testing.T) {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	temp := modes.Banner{}
-	temp.AreaId = 111
+	temp.AreaId = "130322"
 	temp.BannerSite = "轮播图1"
 	temp.PayTime = time.Now().Unix()
 	temp.BannerStatus = 1
@@ -56,7 +58,7 @@ func downLoad(t *testing.T) {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	temp := modes.Banner{}
-	temp.AreaId = 130322
+	temp.AreaId = "130322"
 	temp.BannerSite = "轮播1"
 	err = client.Call("Banner.DownShow", &temp, &temp)
 	if err != nil {
@@ -100,13 +102,31 @@ func updateBanner(t *testing.T) {
 		fmt.Println("连接RPC服务失败:", err)
 	}
 	temp := modes.Banner{}
-	temp.AreaId = 112
+	temp.AreaId = "130322"
 	temp.ID=1
 	temp.BannerSite = "轮播图3"
 	err = client.Call("Banner.UpdateBanner", &temp, &temp)
 	if err != nil {
 		fmt.Println("调用失败:", err)
 	}
+}
+
+/*根据条件查询历史count*/
+func findCount(t *testing.T) {
+	t.SkipNow()
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println()
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	var arr []int64
+	var str = "area_id = '130322'"
+	err = client.Call("Banner.GetShowCount", &str, &arr)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Println(arr)
 }
 
 /*查询指定县,指定广告位数据*/
@@ -145,6 +165,23 @@ func tempGet(t *testing.T){
 	}
 	fmt.Printf("调用结果:%+v\n", temp)
 }
+
+/*模板获取*/
+func tempFind(t *testing.T){
+	//t.SkipNow()
+	client, err := rpc.Dial("tcp", "127.0.0.1:7003")
+	defer func() { client.Close() }()
+	if err != nil {
+		fmt.Println("连接RPC服务失败:", err)
+	}
+	result:=make([]modes.Temp,0)
+	err = client.Call("TemplateBanner.FindOut", &result, &result)
+	if err != nil {
+		fmt.Println("调用失败:", err)
+	}
+	fmt.Printf("调用结果:%+v\n", result)
+}
+
 
 /*模板设置*/
 func tempSet(t *testing.T){

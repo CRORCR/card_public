@@ -21,7 +21,7 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `banner`;
 CREATE TABLE `banner` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `area_id` int(11) DEFAULT NULL COMMENT '县id',
+  `area_id` varchar(255) DEFAULT NULL COMMENT '县id',
   `pay_merchant_id` varchar(255) DEFAULT NULL COMMENT '购买商家id',
   `merchant_id` varchar(255) DEFAULT NULL COMMENT '广告商家id',
   `dad` int(11) DEFAULT NULL COMMENT '表id',
