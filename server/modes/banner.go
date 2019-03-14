@@ -46,7 +46,7 @@ const (
 type Banner struct {
 	ID            int64  `json:"id" xorm:"id"`
 	PayId         string `json:"pay_id" xorm:"pay_id"`                   //订单id
-	AreaId        int64  `json:"area_id" xorm:"area_id"`                 //县id
+	AreaId        string  `json:"area_id" xorm:"area_id"`                 //县id
 	PayMerchantID string `json:"pay_merchant_id" xorm:"pay_merchant_id"` //购买商家id
 	MerchantID    string `json:"merchant_id" xorm:"merchant_id"`         //广告商家id
 	DadID         int64  `json:"dad" xorm:"dad"`                         //表id
@@ -98,11 +98,12 @@ func (this *Banner) DownShow(input, output *Banner) error {
 }
 
 //下架  每次递减,如果变成0,需要再次选出一个广告
-func downShow(areaId int64, site string) error {
+func downShow(areaId string, site string) error {
 	var key = fmt.Sprintf("%v_%v", areaId, site)
 	npids, _ := db.GetRedis().HGetAll(key).Result()
 	if len(npids) == 0 {
-		return fmt.Errorf("查看上架广告递减失败")
+		//查询yoawo广告
+		return fmt.Errorf("去查看云握广告")
 	}
 	i, _ := strconv.ParseInt(npids["remains"], 10, 64)
 	unix_time, _ := strconv.ParseInt(npids["unix_time"], 10, 64)
@@ -118,8 +119,7 @@ func downShow(areaId int64, site string) error {
 	db.GetRedis().HIncrBy(key, "remains", -1)
 	if i <= 1 { //当前广告无效,选举下一个广告
 		//指定县,指定公告位置,指定公告状态为上架中
-		area, _ := strconv.ParseInt(npids["area_id"], 10, 64)
-		ban := &Banner{BannerSite: npids["site"], AreaId: area, BannerStatus: 2}
+		ban := &Banner{BannerSite: npids["site"], AreaId: npids["area_id"], BannerStatus: 2}
 		db.GetDBHand(0).Table(BANNERTABLE).Get(ban)
 		//修改为已下架
 		ban.BannerStatus = 3
