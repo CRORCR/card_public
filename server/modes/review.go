@@ -33,7 +33,7 @@ func reviewRate() {
 func review() {
 	var result = make(chan *Banner, 1)
 	var clost = make(chan struct{})
-	defer func(){
+	defer func() {
 		close(clost)
 		close(result)
 	}()
@@ -43,7 +43,7 @@ func review() {
 	//县
 	for _, areaId := range areaList {
 		var siteList []string
-		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?",areaId).GroupBy("banner_site").Find(&siteList)
+		db.GetDBHand(0).Table(BANNERTABLE).Cols("banner_site").Where("area_id=?", areaId).GroupBy("banner_site").Find(&siteList)
 		//广告位
 		for _, site := range siteList {
 			ban := &Banner{AreaId: areaId, BannerSite: site, BannerStatus: 2}
@@ -67,8 +67,8 @@ func upload(banner chan *Banner, clost chan struct{}) {
 	case <-clost:
 		return
 	case ban := <-banner:
-		if err:=ban.upShow();err!=nil{
-			fmt.Println("上传有误:",err)
+		if err := ban.upShow(); err != nil {
+			fmt.Println("上传有误:", err)
 		}
 		fmt.Println("上架:success")
 	}
