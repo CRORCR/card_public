@@ -367,15 +367,19 @@ func (this *TemplateBanner) Set(tb, tb2 *Temp) error {
 			return err
 		}
 	}
+	var isExit bool
 	for i := 0; i < len(Template); i++ {
 		if strings.EqualFold(Template[i].AreaID, tb.AreaID) {
 			Template[i] = *tb
+			isExit=true
 		}
 	}
-	if len(tb.Url)==0{
-		return fmt.Errorf("新增广告模板图片不得为空")
+	if !isExit{
+		Template=append(Template,*tb)
+		if len(tb.Url)==0{
+			return fmt.Errorf("新增广告模板图片不得为空")
+		}
 	}
-	Template=append(Template,*tb)
 	buff, err := json.MarshalIndent(Template, "", " ")
 	if err != nil {
 		return err

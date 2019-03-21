@@ -1,14 +1,14 @@
 [
  {
-  "area_id":"130322",
+  "area_id": "130400",
   "url": "https://oss.yoawo.com/1552457741_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.9luwG5aIlbYfbf69a5b5dccb3bba07daf68047a54a8d.png,https://oss.yoawo.com/1552458545_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.sIXqUTbvJ5cSb124fd854eff5797d6b61d0289af06f0.png,https://oss.yoawo.com/1552458351_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.8QYS9Re2ChLt0a4b553c6d430998922a52c398a87196.png",
-  "Temps": [
+  "temps": [
    {
     "name": "轮播图1",
     "pri": [
      {
-      "price": 20,
-      "count": 20
+      "price": 0.01,
+      "count": 1110
      },
      {
       "price": 100,
@@ -28,15 +28,9 @@
       "count": 11
      }
     ]
-   }
-  ]
- },
- {
-  "area_id":"130322",
-  "url": "https://oss.yoawo.com/1552457741_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.9luwG5aIlbYfbf69a5b5dccb3bba07daf68047a54a8d.png,https://oss.yoawo.com/1552458545_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.sIXqUTbvJ5cSb124fd854eff5797d6b61d0289af06f0.png,https://oss.yoawo.com/1552458351_wxa8d03dd17c918cee.o6zAJs9xWc7Z8U1FlnA3h-kWYvZU.8QYS9Re2ChLt0a4b553c6d430998922a52c398a87196.png",
-  "Temps": [
+   },
    {
-    "name": "轮播图1",
+    "name": "轮播图3",
     "pri": [
      {
       "price": 20,
@@ -49,7 +43,20 @@
     ]
    },
    {
-    "name": "轮播图2",
+    "name": "轮播图4",
+    "pri": [
+     {
+      "price": 20,
+      "count": 20
+     },
+     {
+      "price": 100,
+      "count": 11
+     }
+    ]
+   },
+   {
+    "name": "轮播图5",
     "pri": [
      {
       "price": 20,

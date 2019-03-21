@@ -26,6 +26,9 @@ func (this *RPCServer) Start() {
 	rate := new(modes.YoawoRate)
 	rpc.Register(rate)
 
+	revenue := new(modes.YoawoRevenue)
+	rpc.Register(revenue)
+
 	with := new(modes.MWithdrawalFoot)
 	rpc.Register(with)
 
