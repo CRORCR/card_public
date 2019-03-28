@@ -1,14 +1,14 @@
 package modes
 
-/*
-#cgo CFLAGS: -I.
-#cgo LDFLAGS: -L card_public/lib -lshane
-#include "card_public/config/shane.h"
-*/
-import "C"
+///*
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L card_public/lib -lshane
+//#include "card_public/config/shane.h"
+//*/
+//import "C"
 import (
 	"card_public/server/db"
-	"fmt"
+	//"fmt"
 	"time"
 )
 
@@ -45,14 +45,42 @@ func (this *YoawoRevenue) Save(inPara *YoawoRevenue, outPara *int64) error {
 	return err
 }
 
+type TarPara struct {
+	Source int64 // 来源: 1 1元开团，2 附近商家广告位
+	Amount int64 // 支付金额（单位: 分)
+}
 /*
  * desc: 获取本单交易单号
  *
- *************************************************************************************/
-func (this *YoawoRevenue) GetTarNumber(Amount *int64, outPara *string) error {
-	nY, nM, nD := time.Now().Date()
-	vas := C.EncrData(C.int(*Amount))
-	fmt.Println(vas)
-	*outPara = fmt.Sprintf("%d%.2d%.2d%d%.12d", nY, nM, nD, time.Now().Unix, uint64(vas))
-	return nil
+ *	outPara : 构成：年(4)月(2)日(2)来源(3)时间戳(19),加密金额(12) = 32
+ *
+ **************************************************************************************/
+func ( this *YoawoRevenue )GetTarNumber(  inPara *TarPara, outPara *string ) error {
+        nY, nM, nD := time.Now().Date()
+        vas := C.EncrData(C.int(inPara.Amount))
+        fmt.Println(vas)
+        *outPara = fmt.Sprintf("%d%.2d%.2d%.3d%d%.12d", nY, nM, nD,inPara.Source, time.Now().UnixNano(), uint64(vas))
+        return nil
 }
+
+type BulkRefundStatus struct {
+	Bills	[]string	// 退款账号
+	Amount	int64		// 退款金额
+	Status	int64		// 退款状态
+}
+/*
+ * desc: 1元开团,锘的批量退款
+ *
+ *************************************************************************************/
+func ( this *YoawoRevenue )BulkRefund( silBill BulkRefundStatus, outPara *int64 ) error {
+	var err error
+	this.PayRefund = silBill.Amount
+	this.Status    = silBill.Status
+	*outPara, err = db.GetDBHand(0).Table( REVENUETABLE ).
+					In( "bill_no", silBill.Bills ).
+					Where( "source = 1 and pay_type = 1" ).
+					Cols( "pay_refund", "status" ).
+					Update(this)
+        return err
+}
+

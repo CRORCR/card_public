@@ -28,6 +28,10 @@ CREATE TABLE IF NOT EXISTS car_transaction_310(
 	INDEX car_transaction_310( user_id, merchant_id )
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='邯郸商家交易表';
 
+
+
+
+
 /*
  * 描述：石家庄--商家交易表
  *

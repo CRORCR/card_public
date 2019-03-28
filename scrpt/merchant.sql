@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS car_merchant_319(
 	INDEX car_merchant_319( user_id,area_number,merchant_id,merchant_type)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8 AUTO_INCREMENT=0 COMMENT='邢台商家信息表';
 
+
 DROP TABLE IF EXISTS car_merchant_311;
 /*
  * 描述：石家庄--商家信息表
