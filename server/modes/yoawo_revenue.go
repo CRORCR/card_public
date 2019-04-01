@@ -56,10 +56,10 @@ type TarPara struct {
  *
  **************************************************************************************/
 func ( this *YoawoRevenue )GetTarNumber(  inPara *TarPara, outPara *string ) error {
-        nY, nM, nD := time.Now().Date()
-        vas := C.EncrData(C.int(inPara.Amount))
-        fmt.Println(vas)
-        *outPara = fmt.Sprintf("%d%.2d%.2d%.3d%d%.12d", nY, nM, nD,inPara.Source, time.Now().UnixNano(), uint64(vas))
+        //nY, nM, nD := time.Now().Date()
+        //vas := C.EncrData(C.int(inPara.Amount))
+        //fmt.Println(vas)
+        //*outPara = fmt.Sprintf("%d%.2d%.2d%.3d%d%.12d", nY, nM, nD,inPara.Source, time.Now().UnixNano(), uint64(vas))
         return nil
 }
 

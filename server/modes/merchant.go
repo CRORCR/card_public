@@ -569,24 +569,20 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 	if err != nil {
 		return err
 	}
-	fmt.Println("****查询出长度: ",len(radius))
 	start := (inPara.Page - 1) * inPara.OfferSet
 	end := start + inPara.OfferSet
-	fmt.Println("**** page",inPara.Page,"offerset:",inPara.OfferSet,"start:",start,"end:",end)
 	if start >= len(radius) {
 		return errors.New("**** result is empty")
 	}
 	if end > len(radius) {
 		end = len(radius)
 	}
-	fmt.Println("**** 处理 start:",start,"end:",end)
 	radius = radius[start: end] //分页处理
 	//表名对应所有的shareid取出
 	for _,radiuv:= range radius {
 		//数组第一个元素是表名   后面是share_id
 		//addRadiueSelice(radius[i][0], radius[i][1])
 		if len(radiuv)<2{
-			fmt.Printf("**** radiuv:%v\n",radiuv)
 			continue
 		}
 		if len(result[radiuv[0]]) == 0 {
@@ -594,7 +590,6 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 		}
 		result[radiuv[0]] = append(result[radiuv[0]], radiuv[1])
 	}
-	fmt.Println("**** 还剩:",len(radius))
 	//查询mysql 表名对应的所有shareid 集合存储在result中
 	res := make([]*Merchant, 0)
 	for key, value := range result {
@@ -602,7 +597,6 @@ func (this *Merchant) GetNearMerchant(inPara *CoordinatesPoint, outPara *Merchan
 		name := fmt.Sprintf("car_merchant_%v", key)
 		e := db.GetDBHand(0).Table(name).In("merchant_id", value).Find(&m)
 		if e!=nil{
-			fmt.Println("**** 查询商家id有问题:",e)
 			fmt.Printf("%+v",value)
 			continue
 		}
